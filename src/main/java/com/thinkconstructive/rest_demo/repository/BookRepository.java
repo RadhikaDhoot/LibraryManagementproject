@@ -3,8 +3,6 @@ package com.thinkconstructive.rest_demo.repository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkconstructive.rest_demo.model.Book;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -66,23 +64,22 @@ public class BookRepository  {
     }
 
     //Updating an existing book
-    public boolean updateBook(Book book) {
-        String checkSql = "SELECT COUNT(*) FROM books where book_id = ?";
-        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, book.getBookId());
-
-        if (count == null || count == 0) {
-            return false;
+    public void updateBook(Book book) {
+        //Validating the book objects
+        if(book.getBookId() == null || book.getBookId().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book ID is required as bookId and it cannot be null or empty");
+        }
+        if(book.getBookTitle() == null || book.getBookTitle().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
         }
 
-        String updateSql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
+        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
         try {
             String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
-            int rowsAffected = jdbcTemplate.update(updateSql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
-            return rowsAffected > 0;
+            int rowsAffected = jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
         } catch (Exception e) {
             System.err.println("Error updating the book:" + e.getMessage());
             e.printStackTrace();
-            return false;
         }
     }
 
