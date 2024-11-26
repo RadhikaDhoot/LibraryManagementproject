@@ -1,5 +1,6 @@
 package com.thinkconstructive.rest_demo.repository;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkconstructive.rest_demo.model.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Repository
 public class BookRepository  {
@@ -21,39 +24,69 @@ public class BookRepository  {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    //Inserting or Creating new book into the database
     public void createBook(Book book) {
-        String sql = "INSERT INTO books (book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?)";
+        //Validating the book objects
+        if(book.getBookId() == null || book.getBookId().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book ID is required as bookId and it cannot be null or empty");
+        }
+        if(book.getBookAuthor() == null || book.getBookAuthor().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Author is required as bookAuthor and it cannot be null or empty");
+        }
+        if(book.getBookTitle() == null || book.getBookTitle().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
+        }
+        if(book.getBookDetail() == null || book.getBookDetail().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Detail is required as bookDetail and it cannot be null or empty");
+        }
+
+        //Proceeding with insert if validation passes
+        String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?::jsonb)";
         try {
-            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookAuthor(), book.getBookDetail());
+            String bookDetailJson = new ObjectMapper().writeValueAsString(book.getBookDetail());
+            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);
             System.out.println("Book created successfully");
-        } catch (DataIntegrityViolationException e) {
-            System.err.println("Error: Required fields are missing or invalid data input");
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            System.err.println("Database error occurred while creating the book");
-            e.printStackTrace();
         } catch (Exception e) {
-            System.err.println("An unexpected error occurred");
+            System.err.println("Error while creating the book: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public Optional<Book> getBook(String book_id) {
+    //Retrieving the books by I'd
+    public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
-        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), book_id);
+        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), bookId);
         return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
     }
 
+    //Retrieving all the books available in the database
     public List<Book> getAllBooks() {
         String sql = "SELECT * FROM books";
         return jdbcTemplate.query(sql, new BookRowMapper());
     }
 
-    public void updateBook(Book book) {
-        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ? WHERE book_id = ?";
-        jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), book.getBookDetail(), book.getBookId());
+    //Updating an existing book
+    public boolean updateBook(Book book) {
+        String checkSql = "SELECT COUNT(*) FROM books where book_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, book.getBookId());
+
+        if (count == null || count == 0) {
+            return false;
+        }
+
+        String updateSql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
+        try {
+            String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
+            int rowsAffected = jdbcTemplate.update(updateSql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.err.println("Error updating the book:" + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
+    //Deleting a book from database
     public void deleteBook(String bookId) {
         String sql = "DELETE FROM books WHERE book_id = ?";
         jdbcTemplate.update(sql, bookId);
@@ -66,8 +99,15 @@ public class BookRepository  {
             book.setBookId(rs.getString("book_id"));
             book.setBookAuthor(rs.getString("book_author"));
             book.setBookTitle(rs.getString("book_title"));
-            book.setBookDetail(rs.getString("book_detail"));
+            String bookDetailJson = rs.getString("book_detail");
+            try {
+                Map<String, Object> bookDetail = new ObjectMapper().readValue(bookDetailJson, new TypeReference<Map<String, Object>>() {});
+                book.setBookDetail(bookDetail);
+            } catch (Exception e) {
+                throw new RuntimeException("Error while reading book_detail from JSON", e);
+            }
             return book;
         }
     }
 }
+

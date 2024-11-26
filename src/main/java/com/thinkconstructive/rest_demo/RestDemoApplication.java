@@ -9,8 +9,6 @@ public class RestDemoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(RestDemoApplication.class, args);
-		Book book = new Book("B001", "XYZ", "ABC", "{}");
-		createBook(book);
 
 	}
 

@@ -3,10 +3,12 @@ package com.thinkconstructive.rest_demo.service;
 import com.thinkconstructive.rest_demo.model.Author;
 import com.thinkconstructive.rest_demo.model.Book;
 import com.thinkconstructive.rest_demo.repository.AuthorRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import com.thinkconstructive.rest_demo.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -14,26 +16,29 @@ public class LibraryService {
 
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
-    public LibraryService(BookRepository bookRepository, AuthorRepository authorRepository) {
+    private final JdbcTemplate jdbcTemplate;
+    public LibraryService(BookRepository bookRepository, AuthorRepository authorRepository, JdbcTemplate jdbcTemplate) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
-
 
     public void createBook(Book book) {
         bookRepository.createBook(book);
     }
 
-    public void updateBook(Book book) {
+    public boolean updateBook(Book book) {
         bookRepository.updateBook(book);
+        return true;
     }
 
-    public void deleteBook(String book_id) {
-        bookRepository.deleteBook(book_id);
+    public boolean deleteBook(String bookId) {
+        bookRepository.deleteBook(bookId);
+        return true;
     }
 
-    public Optional<Book> getBook(String book_id) {
-        return bookRepository.getBook(book_id);
+    public Optional<Book> getBook(String bookId) {
+        return bookRepository.getBook(bookId);
     }
 
     public List<Book> getAllBooks() {
@@ -44,12 +49,14 @@ public class LibraryService {
         authorRepository.createAuthor(author);
     }
 
-    public void updateAuthor(Author author) {
+    public boolean updateAuthor(Author author) {
         authorRepository.updateAuthor(author);
+        return true;
     }
 
-    public void deleteAuthor(String author_id) {
+    public boolean deleteAuthor(String author_id) {
         authorRepository.deleteAuthor(author_id);
+        return true;
     }
 
     public Optional<Author> getAuthor(String author_id) {
@@ -60,5 +67,11 @@ public class LibraryService {
         return authorRepository.getAllAuthor();
     }
 
+    public List<Map<String, Object>> booksJoinAuthors() {
+        String sql = "SELECT b.book_id, a.author_id, b.book_title " +
+                "FROM books b JOIN authors a " +
+                "ON b.book_author = a.author_name";
+        return jdbcTemplate.queryForList(sql);
+    }
 }
 
