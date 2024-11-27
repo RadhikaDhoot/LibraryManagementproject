@@ -28,13 +28,21 @@ public class LibraryService {
     }
 
     public boolean updateBook(Book book) {
-        bookRepository.updateBook(book);
-        return true;
+        Optional<Book> existingBook = getBook(book.getBookId());
+        if(existingBook.isPresent()) {
+            bookRepository.updateBook(book);
+            return true;
+        }
+        return false;
     }
 
     public boolean deleteBook(String bookId) {
-        bookRepository.deleteBook(bookId);
-        return true;
+        Optional<Book> existingBook = getBook(bookId);
+        if (existingBook.isPresent()) {
+            bookRepository.deleteBook(bookId);
+            return true;
+        }
+        return false;
     }
 
     public Optional<Book> getBook(String bookId) {
@@ -50,17 +58,25 @@ public class LibraryService {
     }
 
     public boolean updateAuthor(Author author) {
-        authorRepository.updateAuthor(author);
-        return true;
+        Optional<Author> existingAuthor = getAuthor(author.getAuthorId());
+        if(existingAuthor.isPresent()) {
+            authorRepository.updateAuthor(author);
+            return true;
+        }
+        return false;
     }
 
-    public boolean deleteAuthor(String author_id) {
-        authorRepository.deleteAuthor(author_id);
-        return true;
+    public boolean deleteAuthor(String authorId) {
+        Optional<Author> existingAuthor = getAuthor(authorId);
+        if(existingAuthor.isPresent()) {
+            authorRepository.deleteAuthor(authorId);
+            return true;
+        }
+        return false;
     }
 
-    public Optional<Author> getAuthor(String author_id) {
-        return authorRepository.getAuthor(author_id);
+    public Optional<Author> getAuthor(String authorId) {
+        return authorRepository.getAuthor(authorId);
     }
 
     public List<Author> getAllAuthors() {
@@ -74,4 +90,3 @@ public class LibraryService {
         return jdbcTemplate.queryForList(sql);
     }
 }
-

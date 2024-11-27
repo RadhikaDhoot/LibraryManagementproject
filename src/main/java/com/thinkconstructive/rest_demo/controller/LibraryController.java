@@ -6,6 +6,7 @@ import com.thinkconstructive.rest_demo.service.LibraryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class LibraryController {
 
     //Fetching the list of books
     @GetMapping("/books")
-    public List<Book> getAllBook() {
+    public List<Book> getAllBooks() {
         return libraryService.getAllBooks();
     }
 
@@ -54,9 +55,13 @@ public class LibraryController {
 
     //Deleting a book record using its id
     @DeleteMapping("/books/{bookId}")
-    public String deleteBookDetails(@PathVariable("bookId") String bookId) {
-        libraryService.deleteBook(bookId);
-        return "Book Deleted Successfully";
+    public ResponseEntity<String> deleteBookDetails(@PathVariable("bookId") String bookId) {
+        boolean isDeleted = libraryService.deleteBook(bookId);
+        if (isDeleted) {
+            return ResponseEntity.ok("Book Deleted Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found");
+        }
     }
 
     // Fetching a specific author by its id
@@ -81,17 +86,26 @@ public class LibraryController {
     }
 
     //Updating details of an existing author
-    @PutMapping("/authors")
-    public String updateAuthor(@RequestBody Author author) {
-        libraryService.updateAuthor(author);
-        return "Author Updated Successfully";
+    @PutMapping("/authors/{authorId}")
+    public ResponseEntity<String> updateAuthor(@PathVariable("authorId") String authorId, @RequestBody Author author) {
+        author.setAuthorId(authorId);
+        boolean isUpdated = libraryService.updateAuthor(author);
+        if(isUpdated) {
+            return ResponseEntity.ok("Author Updated Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found or Update Failed");
+        }
     }
 
     //Deleting a author record using its id
     @DeleteMapping("/authors/{authorId}")
-    public String deleteAuthorDetails(@PathVariable("authorId") String authorId) {
-        libraryService.deleteAuthor(authorId);
-        return "Author Deleted Successfully";
+    public ResponseEntity<String> deleteAuthorDetails(@PathVariable("authorId") String authorId) {
+        boolean isDeleted = libraryService.deleteAuthor(authorId);
+        if(isDeleted) {
+            return ResponseEntity.ok("Author Deleted Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found");
+        }
     }
 
     //Using join between books and authors
@@ -99,4 +113,5 @@ public class LibraryController {
     public List<Map< String, Object>> booksJoinAuthors() {
         return libraryService.booksJoinAuthors();
     }
+
 }

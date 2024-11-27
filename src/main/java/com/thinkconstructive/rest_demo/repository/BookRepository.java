@@ -73,7 +73,7 @@ public class BookRepository  {
             throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
         }
 
-        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
+        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::text WHERE book_id = ?";
         try {
             String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
             int rowsAffected = jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
@@ -107,4 +107,3 @@ public class BookRepository  {
         }
     }
 }
-
