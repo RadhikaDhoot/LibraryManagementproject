@@ -23,8 +23,9 @@ public class LibraryService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void createBook(Book book) {
+    public boolean createBook(Book book) {
         bookRepository.createBook(book);
+        return false;
     }
 
     public boolean updateBook(Book book) {

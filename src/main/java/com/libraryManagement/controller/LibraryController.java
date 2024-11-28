@@ -3,6 +3,7 @@ package com.libraryManagement.controller;
 import com.libraryManagement.model.Book;
 import com.libraryManagement.model.Author;
 import com.libraryManagement.service.LibraryService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,8 @@ import java.util.Optional;
 @RequestMapping("/library")
 public class LibraryController {
 
-    LibraryService libraryService;
+    private final LibraryService libraryService;
+    @Autowired
     public LibraryController(LibraryService libraryService) {
         this.libraryService = libraryService;
     }
@@ -24,7 +26,7 @@ public class LibraryController {
     public ResponseEntity<Book> getBookDetails(@PathVariable("bookId") String bookId) {
         Optional<Book> book = libraryService.getBook(bookId);
         return book.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     //Fetching the list of books
@@ -35,9 +37,9 @@ public class LibraryController {
 
     //Creating a new book record
     @PostMapping("/books")
-    public String createBook(@RequestBody Book book) {
+    public ResponseEntity<String> createBook(@RequestBody Book book) {
         libraryService.createBook(book);
-        return "Book Created Successfully";
+        return ResponseEntity.ok("Book Created Successfully");
     }
 
     //Updating details of an existing book

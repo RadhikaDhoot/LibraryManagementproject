@@ -26,7 +26,23 @@ class LibraryControllerTests {
 
 	@Test
 	public void testCreateBook() {
+		Book newBook= new Book("B106", "Heidi", "Johanna Spyri", Map.of("publishing year", "2015", "genre", "Fiction"));
 
+		//Adding the book
+		boolean isAdded = libraryService.createBook(newBook);
+
+		//Verifying if the book was added successfully
+
+		Optional<Book> retrievedBook = libraryService.getBook("B106");
+		if(retrievedBook.isPresent()) {
+			Book addedBook = retrievedBook.get();
+			assertThat(addedBook.getBookId()).isEqualTo(newBook.getBookId());
+			assertThat(addedBook.getBookAuthor()).isEqualTo(newBook.getBookAuthor());
+			assertThat(addedBook.getBookTitle()).isEqualTo(newBook.getBookTitle());
+			assertThat(addedBook.getBookDetail()).isEqualTo(newBook.getBookDetail());
+		} else {
+			System.out.println("Added book is not found in the database");
+		}
 	}
 
 	@Test
@@ -50,7 +66,7 @@ class LibraryControllerTests {
 			assertThat(retrievedBook.getBookDetail()).isEqualTo(Map.of(
 					"publishing year", "2018",
 					"genre", "Motivational"));
-			System.out.println("Book found ");
+			System.out.println("Book found");
 		} else {
 			System.out.println("Book with bookId: " + bookId + " ,does not exist");
 		}

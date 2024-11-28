@@ -39,7 +39,7 @@ public class BookRepository  {
         }
 
         //Proceeding with insert if validation passes
-        String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?::jsonb)";
+        String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?)";
         try {
             String bookDetailJson = new ObjectMapper().writeValueAsString(book.getBookDetail());
             jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);

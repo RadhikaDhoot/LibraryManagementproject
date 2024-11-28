@@ -1,5 +1,7 @@
 package com.libraryManagement.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
 
 public class Book {
