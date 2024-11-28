@@ -38,10 +38,23 @@ public class LibraryController {
     //Creating a new book record
     @PostMapping("/books")
     public ResponseEntity<String> createBook(@RequestBody Book book) {
-        libraryService.createBook(book);
-        return ResponseEntity.ok("Book Created Successfully");
+        boolean isCreated = libraryService.createBook(book);
+        if (isCreated) {
+            return ResponseEntity.ok("Book Created Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book already exists");
+        }
     }
 
+//    @DeleteMapping("/books/{bookId}")
+//    public ResponseEntity<String> deleteBookDetails(@PathVariable("bookId") String bookId) {
+//        boolean isDeleted = libraryService.deleteBook(bookId);
+//        if (isDeleted) {
+//            return ResponseEntity.ok("Book Deleted Successfully");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found");
+//        }
+//    }
     //Updating details of an existing book
     @PutMapping("/books/{bookId}")
     public ResponseEntity<String> updateBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {

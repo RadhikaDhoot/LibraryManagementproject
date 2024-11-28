@@ -24,8 +24,13 @@ public class LibraryService {
     }
 
     public boolean createBook(Book book) {
-        bookRepository.createBook(book);
-        return false;
+        Optional<Book> existingBook = getBook(book.getBookId());
+        if(existingBook.isPresent()) {
+            return false;
+        } else {
+            bookRepository.createBook(book);
+            return true;
+        }
     }
 
     public boolean updateBook(Book book) {

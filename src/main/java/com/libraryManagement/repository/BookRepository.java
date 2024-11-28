@@ -39,7 +39,7 @@ public class BookRepository  {
         }
 
         //Proceeding with insert if validation passes
-        String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?::jsonb)";
         try {
             String bookDetailJson = new ObjectMapper().writeValueAsString(book.getBookDetail());
             jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);
@@ -73,7 +73,7 @@ public class BookRepository  {
             throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
         }
 
-        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ? WHERE book_id = ?";
+        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
         try {
             String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
             int rowsAffected = jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
