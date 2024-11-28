@@ -1,12 +1,11 @@
-package com.thinkconstructive.rest_demo.controller;
+package com.libraryManagement.controller;
 
-import com.thinkconstructive.rest_demo.model.Book;
-import com.thinkconstructive.rest_demo.model.Author;
-import com.thinkconstructive.rest_demo.service.LibraryService;
+import com.libraryManagement.model.Book;
+import com.libraryManagement.model.Author;
+import com.libraryManagement.service.LibraryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,7 +93,7 @@ public class LibraryController {
             return ResponseEntity.ok("Author Updated Successfully");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found or Update Failed");
-        }
+            }
     }
 
     //Deleting a author record using its id

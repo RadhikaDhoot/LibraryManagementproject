@@ -1,6 +1,6 @@
-package com.thinkconstructive.rest_demo.repository;
+package com.libraryManagement.repository;
 
-import com.thinkconstructive.rest_demo.model.Author;
+import com.libraryManagement.model.Author;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

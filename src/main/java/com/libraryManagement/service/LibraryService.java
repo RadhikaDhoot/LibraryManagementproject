@@ -1,10 +1,10 @@
-package com.thinkconstructive.rest_demo.service;
+package com.libraryManagement.service;
 
-import com.thinkconstructive.rest_demo.model.Author;
-import com.thinkconstructive.rest_demo.model.Book;
-import com.thinkconstructive.rest_demo.repository.AuthorRepository;
+import com.libraryManagement.model.Author;
+import com.libraryManagement.model.Book;
+import com.libraryManagement.repository.AuthorRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
-import com.thinkconstructive.rest_demo.repository.BookRepository;
+import com.libraryManagement.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

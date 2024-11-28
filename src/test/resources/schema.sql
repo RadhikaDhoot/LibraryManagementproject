@@ -2,7 +2,7 @@ create table books (
     book_id varchar(50) primary key,
     book_author varchar(50) not null,
     book_title varchar(50) not null,
-    book_detail JSONB not null
+    book_detail TEXT not null
 );
 
 create table authors (

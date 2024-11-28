@@ -1,4 +1,4 @@
-package com.thinkconstructive.rest_demo.model;
+package com.libraryManagement.model;
 
 public class Author {
 

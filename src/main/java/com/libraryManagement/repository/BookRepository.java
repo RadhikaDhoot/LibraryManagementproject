@@ -1,7 +1,7 @@
-package com.thinkconstructive.rest_demo.repository;
+package com.libraryManagement.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.thinkconstructive.rest_demo.model.Book;
+import com.libraryManagement.model.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -73,10 +73,13 @@ public class BookRepository  {
             throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
         }
 
-        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::text WHERE book_id = ?";
+        String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ? WHERE book_id = ?";
         try {
             String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
             int rowsAffected = jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
+            if (rowsAffected == 0) {
+                throw new RuntimeException("No book found with ID: " + book.getBookId());
+            }
         } catch (Exception e) {
             System.err.println("Error updating the book:" + e.getMessage());
             e.printStackTrace();
