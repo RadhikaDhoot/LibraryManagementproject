@@ -85,9 +85,13 @@ public class LibraryController {
 
     //Creating a new author record
     @PostMapping("/authors")
-    public String createAuthor(@RequestBody Author author) {
-        libraryService.createAuthor(author);
-        return "Author Created Successfully";
+    public ResponseEntity<String> createAuthor(@RequestBody Author author) {
+        boolean isCreated = libraryService.createAuthor(author);
+        if(isCreated) {
+            return ResponseEntity.ok("Author Created Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author already exist");
+        }
     }
 
     //Updating details of an existing author
@@ -118,5 +122,4 @@ public class LibraryController {
     public List<Map< String, Object>> booksJoinAuthors() {
         return libraryService.booksJoinAuthors();
     }
-
 }

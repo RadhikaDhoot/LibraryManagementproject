@@ -26,7 +26,8 @@ class LibraryControllerTests {
 
 	@Test
 	public void testCreateBook() {
-		Book newBook= new Book("B106", "Heidi", "Johanna Spyri", Map.of("publishing year", "2015", "genre", "Fiction"));
+		Book newBook= new Book("B106", "Heidi", "Johanna Spyri",
+				Map.of("publishing year", "2015", "genre", "Fiction"));
 
 		//Adding the book
 		boolean isAdded = libraryService.createBook(newBook);

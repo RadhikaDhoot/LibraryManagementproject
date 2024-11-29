@@ -59,8 +59,9 @@ public class LibraryService {
         return bookRepository.getAllBooks();
     }
 
-    public void createAuthor(Author author) {
+    public boolean createAuthor(Author author) {
         authorRepository.createAuthor(author);
+        return true;
     }
 
     public boolean updateAuthor(Author author) {
