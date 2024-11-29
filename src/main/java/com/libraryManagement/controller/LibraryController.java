@@ -46,15 +46,6 @@ public class LibraryController {
         }
     }
 
-//    @DeleteMapping("/books/{bookId}")
-//    public ResponseEntity<String> deleteBookDetails(@PathVariable("bookId") String bookId) {
-//        boolean isDeleted = libraryService.deleteBook(bookId);
-//        if (isDeleted) {
-//            return ResponseEntity.ok("Book Deleted Successfully");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found");
-//        }
-//    }
     //Updating details of an existing book
     @PutMapping("/books/{bookId}")
     public ResponseEntity<String> updateBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {
@@ -108,7 +99,7 @@ public class LibraryController {
             return ResponseEntity.ok("Author Updated Successfully");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found or Update Failed");
-            }
+        }
     }
 
     //Deleting a author record using its id

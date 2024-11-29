@@ -87,7 +87,7 @@ class LibraryControllerTests {
 					"genre", "Motivational"));
 			System.out.println("Book found");
 		} else {
-			System.out.println("Book with bookId: " + bookId + " ,does not exist");
+			System.out.println("Book with bookId: " + bookId + ",does not exist");
 		}
 	}
 
