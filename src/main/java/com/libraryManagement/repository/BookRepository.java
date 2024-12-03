@@ -53,6 +53,7 @@ public class BookRepository  {
     //Retrieving the books by I'd
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
+
         List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), bookId);
         return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
     }

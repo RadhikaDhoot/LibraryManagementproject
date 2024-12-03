@@ -25,6 +25,130 @@ class LibraryControllerTests {
 	private LibraryService libraryService;
 
 	@Test
+	public void testFindAllAuthors() {
+		//Test the total number of authors from data.sql
+		assertThat(libraryService.getAllAuthors()).hasSize(5);
+	}
+
+	@Test
+	public void testFindAuthorById() {
+		String authorId = "A101";
+
+		//Checking if the author exists in the database with the given authorId
+		Optional<Author> author = libraryService.getAuthor(authorId);
+		if(author.isPresent()) {
+			Author retrievedAuthor = author.get();
+			assertThat(retrievedAuthor.getAuthorId()).isEqualTo(authorId);
+			assertThat(retrievedAuthor.getAuthorName()).isEqualTo("James Clear");
+			System.out.println("Author found");
+		} else {
+			System.out.println("Author with authorId: " + authorId + " ,does not exist");
+		}
+	}
+
+	@Test
+	public void testFindAuthorByNonExistingId() {
+		String authorId = "A000";
+
+		//Checking if the author exists in the database with the given authorId
+		Optional<Author> author = libraryService.getAuthor(authorId);
+		if(author.isPresent()) {
+			Author retrievedAuthor = author.get();
+			assertThat(retrievedAuthor.getAuthorId()).isEqualTo(authorId);
+			assertThat(retrievedAuthor.getAuthorName()).isEqualTo("James Clear");
+			System.out.println("Author found");
+		} else {
+			System.out.println("Author with authorId: " + authorId + " ,does not exist");
+		}
+	}
+
+	@Test
+	public void testDeleteAuthor() {
+		String authorId = "A103";
+
+		//Verify if the author exists in the records
+		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
+
+		if(existingAuthor.isPresent()) {
+			//Deleting the Author
+			boolean isDeleted = libraryService.deleteAuthor(authorId);
+			assertThat(isDeleted).isTrue();
+
+			//Verifying the author no longer exists
+			Optional<Author> deletedAuthor = libraryService.getAuthor(authorId);
+			assertThat(deletedAuthor).isNotPresent();
+			System.out.println("Author deleted successfully");
+		} else {
+			System.out.println("Author does not exist, delete failed");
+		}
+	}
+
+	@Test
+	public void testDeleteNonExistingAuthor() {
+		String authorId = "A223";
+
+		//Verify if the author exists in the records
+		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
+
+		if(existingAuthor.isPresent()) {
+			//Deleting the Author
+			boolean isDeleted = libraryService.deleteAuthor(authorId);
+			assertThat(isDeleted).isTrue();
+
+			//Verifying the author no longer exists
+			Optional<Author> deletedAuthor = libraryService.getAuthor(authorId);
+			assertThat(deletedAuthor).isNotPresent();
+			System.out.println("Author deleted successfully");
+		} else {
+			System.out.println("Author does not exist, delete failed");
+		}
+	}
+
+	@Test
+	public void testUpdateAuthor() {
+		String authorId = "A101";
+
+		//Verify if the author exists in the database or not
+		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
+		if(existingAuthor.isPresent()) {
+			//Updating the author's detail
+			Author updatedAuthor = new Author(authorId, "Jay Shetty");
+			boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
+			assertThat(isUpdated).isTrue();
+
+			//Retrieving the updated author and verifying the changes
+			Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
+			assertThat(retrievedAuthor).isPresent();
+			assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo(updatedAuthor.getAuthorName());
+			System.out.println("Author updated successfully with all the values verification");
+		} else  {
+			System.out.println("Author not found in the database, update failed");
+		}
+	}
+
+	@Test
+	public void testUpdateNonExistingAuthor() {
+		String authorId = "A512";
+
+		//Verify if the author exists in the database or not
+		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
+		if(existingAuthor.isPresent()) {
+			//Updating the author's detail
+			Author updatedAuthor = new Author(authorId, "Jay Shetty");
+			boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
+			assertThat(isUpdated).isTrue();
+
+			//Retrieving the updated author and verifying the changes
+			Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
+			assertThat(retrievedAuthor).isPresent();
+			assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo(updatedAuthor.getAuthorName());
+			System.out.println("Author updated successfully with all the values verification");
+		} else  {
+			System.out.println("Author not found in the database, update failed");
+		}
+	}
+
+	@Test
 	public void testCreateBook() {
 		Book newBook= new Book("B106", "Heidi", "Johanna Spyri",
 				Map.of("publishing year", "2015", "genre", "Fiction"));
@@ -173,130 +297,6 @@ class LibraryControllerTests {
 			System.out.println("Book updated successfully with all the values verified");
 		} else {
 			System.out.println("Book not found in the database, update failed");
-		}
-	}
-
-	@Test
-	public void testFindAllAuthors() {
-		//Test the total number of authors from data.sql
-		assertThat(libraryService.getAllAuthors()).hasSize(5);
-	}
-
-	@Test
-	public void testFindAuthorById() {
-		String authorId = "A101";
-
-		//Checking if the author exists in the database with the given authorId
-		Optional<Author> author = libraryService.getAuthor(authorId);
-		if(author.isPresent()) {
-			Author retrievedAuthor = author.get();
-			assertThat(retrievedAuthor.getAuthorId()).isEqualTo(authorId);
-			assertThat(retrievedAuthor.getAuthorName()).isEqualTo("James Clear");
-			System.out.println("Author found");
-		} else {
-			System.out.println("Author with authorId: " + authorId + " ,does not exist");
-		}
-	}
-
-	@Test
-	public void testFindAuthorByNonExistingId() {
-		String authorId = "A000";
-
-		//Checking if the author exists in the database with the given authorId
-		Optional<Author> author = libraryService.getAuthor(authorId);
-		if(author.isPresent()) {
-			Author retrievedAuthor = author.get();
-			assertThat(retrievedAuthor.getAuthorId()).isEqualTo(authorId);
-			assertThat(retrievedAuthor.getAuthorName()).isEqualTo("James Clear");
-			System.out.println("Author found");
-		} else {
-			System.out.println("Author with authorId: " + authorId + " ,does not exist");
-		}
-	}
-
-	@Test
-	public void testDeleteAuthor() {
-		String authorId = "A103";
-
-		//Verify if the author exists in the records
-		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
-
-		if(existingAuthor.isPresent()) {
-			//Deleting the Author
-			boolean isDeleted = libraryService.deleteAuthor(authorId);
-			assertThat(isDeleted).isTrue();
-
-			//Verifying the author no longer exists
-			Optional<Author> deletedAuthor = libraryService.getAuthor(authorId);
-			assertThat(deletedAuthor).isNotPresent();
-			System.out.println("Author deleted successfully");
-		} else {
-			System.out.println("Author does not exist, delete failed");
-		}
-	}
-
-	@Test
-	public void testDeleteNonExistingAuthor() {
-		String authorId = "A223";
-
-		//Verify if the author exists in the records
-		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
-
-		if(existingAuthor.isPresent()) {
-			//Deleting the Author
-			boolean isDeleted = libraryService.deleteAuthor(authorId);
-			assertThat(isDeleted).isTrue();
-
-			//Verifying the author no longer exists
-			Optional<Author> deletedAuthor = libraryService.getAuthor(authorId);
-			assertThat(deletedAuthor).isNotPresent();
-			System.out.println("Author deleted successfully");
-		} else {
-			System.out.println("Author does not exist, delete failed");
-		}
-	}
-
-	@Test
-	public void testUpdateAuthor() {
-		String authorId = "A101";
-
-		//Verify if the author exists in the database or not
-		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
-		if(existingAuthor.isPresent()) {
-			//Updating the author's detail
-			Author updatedAuthor = new Author(authorId, "Jay Shetty");
-			boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
-			assertThat(isUpdated).isTrue();
-
-			//Retrieving the updated author and verifying the changes
-			Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
-			assertThat(retrievedAuthor).isPresent();
-			assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo(updatedAuthor.getAuthorName());
-			System.out.println("Author updated successfully with all the values verification");
-		} else  {
-			System.out.println("Author not found in the database, update failed");
-		}
-	}
-
-	@Test
-	public void testUpdateNonExistingAuthor() {
-		String authorId = "A512";
-
-		//Verify if the author exists in the database or not
-		Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
-		if(existingAuthor.isPresent()) {
-			//Updating the author's detail
-			Author updatedAuthor = new Author(authorId, "Jay Shetty");
-			boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
-			assertThat(isUpdated).isTrue();
-
-			//Retrieving the updated author and verifying the changes
-			Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
-			assertThat(retrievedAuthor).isPresent();
-			assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo(updatedAuthor.getAuthorName());
-			System.out.println("Author updated successfully with all the values verification");
-		} else  {
-			System.out.println("Author not found in the database, update failed");
 		}
 	}
 
