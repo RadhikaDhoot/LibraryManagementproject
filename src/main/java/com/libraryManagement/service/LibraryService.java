@@ -24,6 +24,7 @@ public class LibraryService {
     }
 
     public boolean createBook(Book book) {
+        validateBook(book);
         Optional<Book> existingBook = getBook(book.getBookId());
         if(existingBook.isPresent()) {
             return false;
@@ -33,7 +34,24 @@ public class LibraryService {
         }
     }
 
+    private void validateBook(Book book) {
+    //Validating the book objects
+        if(book.getBookId() == null || book.getBookId().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book ID is required as bookId and it cannot be null or empty");
+        }
+        if(book.getBookAuthor() == null || book.getBookAuthor().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Author is required as bookAuthor and it cannot be null or empty");
+        }
+        if(book.getBookTitle() == null || book.getBookTitle().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
+        }
+        if(book.getBookDetail() == null || book.getBookDetail().isEmpty()) {
+            throw new IllegalArgumentException("Error: Book Detail is required as bookDetail and it cannot be null or empty");
+        }
+    }
+
     public boolean updateBook(Book book) {
+        validateBook(book);
         Optional<Book> existingBook = getBook(book.getBookId());
         if(existingBook.isPresent()) {
             bookRepository.updateBook(book);

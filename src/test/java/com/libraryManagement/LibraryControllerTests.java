@@ -119,7 +119,7 @@ class LibraryControllerTests {
 			//Retrieving the updated author and verifying the changes
 			Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
 			assertThat(retrievedAuthor).isPresent();
-			assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo(updatedAuthor.getAuthorName());
+			assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo("Jay Shetty");
 			System.out.println("Author updated successfully with all the values verification");
 		} else  {
 			System.out.println("Author not found in the database, update failed");
@@ -157,7 +157,6 @@ class LibraryControllerTests {
 		boolean isAdded = libraryService.createBook(newBook);
 
 		//Verifying if the book was added successfully
-
 		Optional<Book> retrievedBook = libraryService.getBook("B106");
 		if(retrievedBook.isPresent()) {
 			Book addedBook = retrievedBook.get();

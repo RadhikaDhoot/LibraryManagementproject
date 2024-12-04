@@ -24,21 +24,6 @@ public class BookRepository  {
 
     //Inserting or Creating new book into the database
     public void createBook(Book book) {
-        //Validating the book objects
-        if(book.getBookId() == null || book.getBookId().isEmpty()) {
-            throw new IllegalArgumentException("Error: Book ID is required as bookId and it cannot be null or empty");
-        }
-        if(book.getBookAuthor() == null || book.getBookAuthor().isEmpty()) {
-            throw new IllegalArgumentException("Error: Book Author is required as bookAuthor and it cannot be null or empty");
-        }
-        if(book.getBookTitle() == null || book.getBookTitle().isEmpty()) {
-            throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
-        }
-        if(book.getBookDetail() == null || book.getBookDetail().isEmpty()) {
-            throw new IllegalArgumentException("Error: Book Detail is required as bookDetail and it cannot be null or empty");
-        }
-
-        //Proceeding with insert if validation passes
         String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?::jsonb)";
         try {
             String bookDetailJson = new ObjectMapper().writeValueAsString(book.getBookDetail());
@@ -66,14 +51,6 @@ public class BookRepository  {
 
     //Updating an existing book
     public void updateBook(Book book) {
-        //Validating the book objects
-        if(book.getBookId() == null || book.getBookId().isEmpty()) {
-            throw new IllegalArgumentException("Error: Book ID is required as bookId and it cannot be null or empty");
-        }
-        if(book.getBookTitle() == null || book.getBookTitle().isEmpty()) {
-            throw new IllegalArgumentException("Error: Book Title is required as bookTitle and it cannot be null or empty");
-        }
-
         String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
         try {
             String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
