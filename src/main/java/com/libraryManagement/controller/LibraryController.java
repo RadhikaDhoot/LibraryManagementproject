@@ -119,7 +119,7 @@ public class LibraryController {
 
     //Using join between books and authors
     @GetMapping("books-join-authors")
-    public List<Map< String, Object>> booksJoinAuthors() {
+    public List<Map<String, Object>> booksJoinAuthors() {
         return libraryService.booksJoinAuthors();
     }
 }
