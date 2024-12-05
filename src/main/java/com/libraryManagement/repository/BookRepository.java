@@ -1,6 +1,7 @@
 package com.libraryManagement.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.libraryManagement.model.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -79,7 +80,7 @@ public class BookRepository  {
             book.setBookTitle(rs.getString("book_title"));
             String bookDetailJson = rs.getString("book_detail");
             try {
-                Map<String, Object> bookDetail = new ObjectMapper().readValue(bookDetailJson, new TypeReference<Map<String, Object>>() {});
+                JsonNode bookDetail = new ObjectMapper().readTree(bookDetailJson);
                 book.setBookDetail(bookDetail);
             } catch (Exception e) {
                 throw new RuntimeException("Error while reading book_detail from JSON", e);

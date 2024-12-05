@@ -1,18 +1,17 @@
 package com.libraryManagement.model;
-
-import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class Book {
 
     private String bookId;
     private String bookAuthor;
     private String bookTitle;
-    private Map<String, Object> bookDetail;
+    private JsonNode bookDetail;
 
     public Book () {
     }
 
-    public Book (String bookId, String bookAuthor, String bookTitle, Map<String, Object> bookDetail) {
+    public Book (String bookId, String bookAuthor, String bookTitle, JsonNode bookDetail) {
         this.bookId = bookId;
         this.bookAuthor = bookAuthor;
         this.bookTitle = bookTitle;
@@ -43,11 +42,11 @@ public class Book {
         this.bookTitle = bookTitle;
     }
 
-    public Map<String, Object> getBookDetail() {
+    public JsonNode getBookDetail() {
         return bookDetail;
     }
 
-    public void setBookDetail(Map<String, Object> bookDetail) {
+    public void setBookDetail(JsonNode bookDetail) {
         this.bookDetail = bookDetail;
     }
 

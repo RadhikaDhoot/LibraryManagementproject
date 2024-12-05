@@ -35,7 +35,7 @@ public class LibraryService {
     }
 
     private void validateBook(Book book) {
-    //Validating the book objects
+        //Validating the book objects
         if(book.getBookId() == null || book.getBookId().isEmpty()) {
             throw new IllegalArgumentException("Error: Book ID is required as bookId and it cannot be null or empty");
         }
