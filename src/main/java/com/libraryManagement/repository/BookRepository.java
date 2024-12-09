@@ -1,8 +1,9 @@
 package com.libraryManagement.repository;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.libraryManagement.model.Book;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -10,12 +11,14 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Repository
 public class BookRepository  {
+    private static final Logger logger = LoggerFactory.getLogger(BookRepository.class);
+
     @Autowired
     private final JdbcTemplate jdbcTemplate;
 
@@ -26,12 +29,13 @@ public class BookRepository  {
     //Inserting or Creating new book into the database
     public void createBook(Book book) {
         String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?::jsonb)";
+        logger.info("Book details to insert - bookId: {}, bookAuthor: {}, bookTitle: {}, bookDetail: {}",
+                book.getBookId(), book.getBookAuthor(), book.getBookTitle(), book.getBookDetail());
         try {
-            String bookDetailJson = new ObjectMapper().writeValueAsString(book.getBookDetail());
-            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);
-            System.out.println("Book created successfully");
+            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), book.getBookAuthor());
+            logger.info("SQL executed successfully. Book created in the database");
         } catch (Exception e) {
-            System.err.println("Error while creating the book: " + e.getMessage());
+            logger.error("Error while creating the book: {}", e.getMessage(), e);
             e.printStackTrace();
         }
     }
@@ -39,9 +43,17 @@ public class BookRepository  {
     //Retrieving the books by I'd
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
-
+        logger.info("Executing SQL query to fetch the book I'D: {}", bookId);
         List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), bookId);
-        return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
+        logger.debug("SQL query executed successfully. Number of books retrieved: {}", books.size());
+        if(books.isEmpty()) {
+            logger.warn("No book found with Id: {}", bookId);
+            return Optional.empty();
+        } else {
+            Book retrievedBook = books.get(0);
+            logger.info("Book retrieved successfully: {}", retrievedBook);
+            return Optional.of(retrievedBook);
+        }
     }
 
     //Retrieving all the books available in the database
@@ -54,8 +66,8 @@ public class BookRepository  {
     public void updateBook(Book book) {
         String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
         try {
-            String bookDetailJSON = new ObjectMapper().writeValueAsString(book.getBookDetail());
-            int rowsAffected = jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), bookDetailJSON, book.getBookId());
+
+            int rowsAffected = jdbcTemplate.update(sql, book.getBookAuthor(), book.getBookTitle(), book.getBookDetail(), book.getBookId());
             if (rowsAffected == 0) {
                 throw new RuntimeException("No book found with ID: " + book.getBookId());
             }
@@ -79,12 +91,15 @@ public class BookRepository  {
             book.setBookAuthor(rs.getString("book_author"));
             book.setBookTitle(rs.getString("book_title"));
             String bookDetailJson = rs.getString("book_detail");
+            logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
             try {
                 JsonNode bookDetail = new ObjectMapper().readTree(bookDetailJson);
                 book.setBookDetail(bookDetail);
+                logger.info("Parsed JSON Node: {}", bookDetail);
             } catch (Exception e) {
                 throw new RuntimeException("Error while reading book_detail from JSON", e);
             }
+            logger.info("Successfully mapped book with bookDetail: {}", book.getBookDetail());
             return book;
         }
     }
