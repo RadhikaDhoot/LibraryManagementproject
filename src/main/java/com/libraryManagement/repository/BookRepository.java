@@ -21,6 +21,7 @@ public class BookRepository  {
 
     @Autowired
     private final JdbcTemplate jdbcTemplate;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public BookRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -32,7 +33,8 @@ public class BookRepository  {
         logger.info("Book details to insert - bookId: {}, bookAuthor: {}, bookTitle: {}, bookDetail: {}",
                 book.getBookId(), book.getBookAuthor(), book.getBookTitle(), book.getBookDetail());
         try {
-            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), book.getBookAuthor());
+            String bookDetailJson = book.getBookDetail().toString();
+            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);
             logger.info("SQL executed successfully. Book created in the database");
         } catch (Exception e) {
             logger.error("Error while creating the book: {}", e.getMessage(), e);
@@ -40,11 +42,11 @@ public class BookRepository  {
         }
     }
 
-    //Retrieving the books by I'd
+
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
         logger.info("Executing SQL query to fetch the book ID: {}", bookId);
-        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), bookId);
+        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(new ObjectMapper()), bookId);
         logger.debug("SQL query executed successfully. Number of books retrieved: {}", books.size());
         if(books.isEmpty()) {
             logger.warn("No book found with Id: {}", bookId);
@@ -59,7 +61,7 @@ public class BookRepository  {
     //Retrieving all the books available in the database
     public List<Book> getAllBooks() {
         String sql = "SELECT * FROM books ORDER BY book_id";
-        return jdbcTemplate.query(sql, new BookRowMapper());
+        return jdbcTemplate.query(sql, new BookRowMapper(new ObjectMapper()));
     }
 
     //Updating an existing book
@@ -84,6 +86,12 @@ public class BookRepository  {
     }
 
     private static class BookRowMapper implements RowMapper<Book> {
+        private final ObjectMapper objectMapper;
+
+        public BookRowMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+        }
+
         @Override
         public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
             Book book = new Book();
@@ -93,7 +101,7 @@ public class BookRepository  {
             String bookDetailJson = rs.getString("book_detail");
             logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
             try {
-                JsonNode bookDetail = new ObjectMapper().readTree(bookDetailJson);
+                JsonNode bookDetail = objectMapper.readTree(bookDetailJson);
                 book.setBookDetail(bookDetail);
                 logger.info("Parsed JSON Node: {}", bookDetail);
             } catch (Exception e) {

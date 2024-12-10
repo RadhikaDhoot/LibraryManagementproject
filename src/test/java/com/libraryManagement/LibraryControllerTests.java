@@ -178,7 +178,7 @@ class LibraryControllerTests {
 
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode retrievedBookDetail = objectMapper.readTree(addedBook.getBookDetail().toString());
-					assertThat(retrievedBookDetail).isEqualTo(bookDetail);
+			assertThat(retrievedBookDetail).isEqualTo(bookDetail);
 		} else {
 			logger.error("Added book is not found in the database");
 		}
