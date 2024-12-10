@@ -43,7 +43,7 @@ public class BookRepository  {
     //Retrieving the books by I'd
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
-        logger.info("Executing SQL query to fetch the book I'D: {}", bookId);
+        logger.info("Executing SQL query to fetch the book ID: {}", bookId);
         List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), bookId);
         logger.debug("SQL query executed successfully. Number of books retrieved: {}", books.size());
         if(books.isEmpty()) {
@@ -58,7 +58,7 @@ public class BookRepository  {
 
     //Retrieving all the books available in the database
     public List<Book> getAllBooks() {
-        String sql = "SELECT * FROM books";
+        String sql = "SELECT * FROM books ORDER BY book_id";
         return jdbcTemplate.query(sql, new BookRowMapper());
     }
 

@@ -209,7 +209,6 @@ class LibraryControllerTests {
 			assertThat(retrievedBook.getBookDetail()).isEqualTo(expectedDetails);
 			logger.info("Book details successfully validated: {}, retrievedBook", bookId);
 		} else {
-			System.out.println("Book with bookId: " + bookId + " ,does not exist");
 			logger.warn("Book with Id: {} does not exist", bookId);
 		}
 	}
@@ -247,7 +246,7 @@ class LibraryControllerTests {
 			boolean isDeleted = libraryService.deleteBook(bookId);
 			assertThat(isDeleted).isTrue();
 			//Verify the book no longer exists in the database
-			logger.info("Delete operation for Book with ID: {} returned: {}", bookId, isDeleted);
+			logger.info("Delete operation for Book with ID: {} returned: {}", bookId, true);
 			Optional<Book> deletedBook = libraryService.getBook(bookId);
 			assertThat(deletedBook).isNotPresent();
 			logger.info("Verified that the book with book ID: {} has been successfully deleted", bookId);

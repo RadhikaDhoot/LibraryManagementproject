@@ -51,7 +51,7 @@ public class AuthorRepository {
 
     //Retrieving all the authors present in the database
     public List<Author> getAllAuthor() {
-        String sql = "SELECT * FROM authors";
+        String sql = "SELECT * FROM authors ORDER BY author_id";
         return jdbcTemplate.query(sql, new AuthorRowMapper());
     }
 
