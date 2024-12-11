@@ -23,10 +23,57 @@ public class LibraryService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public boolean createAuthor(Author author) {
+        validateAuthor(author);
+        Optional<Author> newAuthor = getAuthor(author.getAuthorId());
+        if(newAuthor.isPresent()) {
+            return false;
+        } else {
+            authorRepository.createAuthor(author);
+            return true;
+        }
+    }
+
+    private void validateAuthor(Author author) {
+        //Validating the author objects
+        if(author.getAuthorId() == null || author.getAuthorId().isEmpty()) {
+            throw new IllegalArgumentException("Error: Author Id is required as authorId and it cannot be null or empty");
+        }
+        if(author.getAuthorName() == null || author.getAuthorName().isEmpty()) {
+            throw new IllegalArgumentException("Error: Author Name is required as authorName and it cannot be null or empty");
+        }
+    }
+
+    public boolean updateAuthor(Author author) {
+        Optional<Author> existingAuthor = getAuthor(author.getAuthorId());
+        if(existingAuthor.isPresent()) {
+            authorRepository.updateAuthor(author);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean deleteAuthor(String authorId) {
+        Optional<Author> existingAuthor = getAuthor(authorId);
+        if(existingAuthor.isPresent()) {
+            authorRepository.deleteAuthor(authorId);
+            return true;
+        }
+        return false;
+    }
+
+    public Optional<Author> getAuthor(String authorId) {
+        return authorRepository.getAuthor(authorId);
+    }
+
+    public List<Author> getAllAuthors() {
+        return authorRepository.getAllAuthor();
+    }
+
     public boolean createBook(Book book) {
         validateBook(book);
-        Optional<Book> existingBook = getBook(book.getBookId());
-        if(existingBook.isPresent()) {
+        Optional<Book> newBook = getBook(book.getBookId());
+        if(newBook.isPresent()) {
             return false;
         } else {
             bookRepository.createBook(book);
@@ -75,37 +122,6 @@ public class LibraryService {
 
     public List<Book> getAllBooks() {
         return bookRepository.getAllBooks();
-    }
-
-    public boolean createAuthor(Author author) {
-        authorRepository.createAuthor(author);
-        return true;
-    }
-
-    public boolean updateAuthor(Author author) {
-        Optional<Author> existingAuthor = getAuthor(author.getAuthorId());
-        if(existingAuthor.isPresent()) {
-            authorRepository.updateAuthor(author);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean deleteAuthor(String authorId) {
-        Optional<Author> existingAuthor = getAuthor(authorId);
-        if(existingAuthor.isPresent()) {
-            authorRepository.deleteAuthor(authorId);
-            return true;
-        }
-        return false;
-    }
-
-    public Optional<Author> getAuthor(String authorId) {
-        return authorRepository.getAuthor(authorId);
-    }
-
-    public List<Author> getAllAuthors() {
-        return authorRepository.getAllAuthor();
     }
 
     public List<Map<String, Object>> booksJoinAuthors() {

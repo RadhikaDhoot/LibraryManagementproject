@@ -1,12 +1,16 @@
 package com.libraryManagement.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.libraryManagement.model.Author;
 import com.libraryManagement.model.Book;
+import com.libraryManagement.service.LibraryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
+import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -99,6 +103,8 @@ public class BookRepository  {
             book.setBookAuthor(rs.getString("book_author"));
             book.setBookTitle(rs.getString("book_title"));
             String bookDetailJson = rs.getString("book_detail");
+            LobHandler lobHandler = new DefaultLobHandler();
+            bookDetailJson = lobHandler.getClobAsString(rs,"book_detail");
             logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
             try {
                 JsonNode bookDetail = objectMapper.readTree(bookDetailJson);
@@ -112,3 +118,5 @@ public class BookRepository  {
         }
     }
 }
+
+//ResultSetExtractor

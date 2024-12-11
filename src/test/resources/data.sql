@@ -11,7 +11,7 @@ INSERT INTO books(book_id, book_author, book_title, book_detail)
 VALUES ('B104', 'Cal Newport', 'Deep Work', '{"publishing year": "2016", "genre": "Self-Help"}'::jsonb);
 
 INSERT INTO books(book_id, book_author, book_title, book_detail)
-VALUES ('B105', 'Darius Foroux', 'Do It Today', '{"publishing year": "2018", "genre": "Motivational"}'::jsonb);
+VALUES ('B105', 'Darius Foroux', 'Do It Today', '{"publishing year": "2018", "genre": "Motivational"}');
 
 INSERT INTO authors(author_id, author_name)
 VALUES ('A101', 'James Clear');

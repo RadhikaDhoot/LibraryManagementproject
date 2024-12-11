@@ -21,54 +21,6 @@ public class LibraryController {
         this.libraryService = libraryService;
     }
 
-    //Fetching details of a specific book by its id
-    @GetMapping("/books/{bookId}")
-    public ResponseEntity<Book> getBookDetails(@PathVariable("bookId") String bookId) {
-        Optional<Book> book = libraryService.getBook(bookId);
-        return book.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    //Fetching the list of books
-    @GetMapping("/books")
-    public List<Book> getAllBooks() {
-        return libraryService.getAllBooks();
-    }
-
-    //Creating a new book record
-    @PostMapping("/books")
-    public ResponseEntity<String> createBook(@RequestBody Book book) {
-        boolean isCreated = libraryService.createBook(book);
-        if (isCreated) {
-            return ResponseEntity.ok("Book Created Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book already exists");
-        }
-    }
-
-    //Updating details of an existing book
-    @PutMapping("/books/{bookId}")
-    public ResponseEntity<String> updateBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {
-        book.setBookId(bookId);
-        boolean isUpdated = libraryService.updateBook(book);
-        if(isUpdated) {
-            return ResponseEntity.ok("Book Updated Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found or Update Failed");
-        }
-    }
-
-    //Deleting a book record using its id
-    @DeleteMapping("/books/{bookId}")
-    public ResponseEntity<String> deleteBookDetails(@PathVariable("bookId") String bookId) {
-        boolean isDeleted = libraryService.deleteBook(bookId);
-        if (isDeleted) {
-            return ResponseEntity.ok("Book Deleted Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found");
-        }
-    }
-
     // Fetching a specific author by its id
     @GetMapping("/authors/{authorId}")
     public ResponseEntity<Author> getAuthorDetails(@PathVariable("authorId") String authorId) {
@@ -114,6 +66,54 @@ public class LibraryController {
             return ResponseEntity.ok("Author Deleted Successfully");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found");
+        }
+    }
+
+    //Fetching details of a specific book by its id
+    @GetMapping("/books/{bookId}")
+    public ResponseEntity<Book> getBookDetails(@PathVariable("bookId") String bookId) {
+        Optional<Book> book = libraryService.getBook(bookId);
+        return book.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    //Fetching the list of books
+    @GetMapping("/books")
+    public List<Book> getAllBooks() {
+        return libraryService.getAllBooks();
+    }
+
+    //Creating a new book record
+    @PostMapping("/books")
+    public ResponseEntity<String> createBook(@RequestBody Book book) {
+        boolean isCreated = libraryService.createBook(book);
+        if (isCreated) {
+            return ResponseEntity.ok("Book Created Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book already exists");
+        }
+    }
+
+    //Updating details of an existing book
+    @PutMapping("/books/{bookId}")
+    public ResponseEntity<String> updateBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {
+        book.setBookId(bookId);
+        boolean isUpdated = libraryService.updateBook(book);
+        if(isUpdated) {
+            return ResponseEntity.ok("Book Updated Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found or Update Failed");
+        }
+    }
+
+    //Deleting a book record using its id
+    @DeleteMapping("/books/{bookId}")
+    public ResponseEntity<String> deleteBookDetails(@PathVariable("bookId") String bookId) {
+        boolean isDeleted = libraryService.deleteBook(bookId);
+        if (isDeleted) {
+            return ResponseEntity.ok("Book Deleted Successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found");
         }
     }
 
