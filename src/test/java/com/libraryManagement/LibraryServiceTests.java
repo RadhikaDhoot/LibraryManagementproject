@@ -41,7 +41,7 @@ class LibraryServiceTests {
         Optional<Author> retrieveAuthor = libraryService.getAuthor("A106");
         if(retrieveAuthor.isPresent()) {
             Author addedAuthor = retrieveAuthor.get();
-            logger.info("Retrieved Author is {} ", addedAuthor);
+            logger.info("Retrieved Author is {} ", addedAuthor.getAuthorId());
             assertThat(addedAuthor.getAuthorId()).isEqualTo("A106");
             assertThat(addedAuthor.getAuthorName()).isEqualTo("Johanna Spyri");
         } else {

@@ -46,7 +46,45 @@ public class BookRepository  {
         }
     }
 
+    //Retrieving book by ID
+//    public Optional<Book> getBook(String bookId) {
+//        String sql = "SELECT * FROM books where book_id = ?";
+//        logger.info("Executing SQL query to fetch the book ID: {}", bookId);
+//        Book books = jdbcTemplate.query(sql, rs -> {
+//            if (rs.next()) {
+//                Book extractedBook = new Book();
+//                extractedBook.setBookId(rs.getString("book_id"));
+//                extractedBook.setBookAuthor(rs.getString("book_author"));
+//                extractedBook.setBookTitle(rs.getString("book_title"));
+//                String bookDetailJson = rs.getString("book_detail");
+//
+//                LobHandler lobHandler = new DefaultLobHandler();
+//                bookDetailJson = lobHandler.getClobAsString(rs, "book_detail");
+//                logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
+//                try {
+//                    ObjectMapper objectMapper = new ObjectMapper();
+//                    JsonNode bookDetail = objectMapper.readTree(bookDetailJson);
+//                    extractedBook.setBookDetail(bookDetail);
+//                    logger.info("Parsed JSON Node: {}", bookDetail);
+//                } catch (Exception e) {
+//                    throw new RuntimeException("Error while reading book_detail from JSON", e);
+//                }
+//                logger.info("Successfully mapped book with bookDetail: {}", extractedBook.getBookDetail());
+//                return extractedBook;
+//            }
+//            return null;
+//        }, bookId);
+//
+//        if(books == null) {
+//            logger.warn("No book found with Id: {}", bookId);
+//            return Optional.empty();
+//        } else {
+//            logger.info("Book retrieved successfully: {}", books);
+//            return Optional.of(books);
+//        }
+//    }
 
+    //Retrieving book by ID
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
         logger.info("Executing SQL query to fetch the book ID: {}", bookId);
@@ -62,7 +100,7 @@ public class BookRepository  {
         }
     }
 
-    //Retrieving all the books available in the database
+   // Retrieving all the books available in the database
     public List<Book> getAllBooks() {
         String sql = "SELECT * FROM books ORDER BY book_id";
         return jdbcTemplate.query(sql, new BookRowMapper(new ObjectMapper()));
@@ -118,5 +156,3 @@ public class BookRepository  {
         }
     }
 }
-
-//ResultSetExtractor
