@@ -24,15 +24,6 @@ public class AuthorRepository {
 
     //Creating and inserting an authors detail into authors table
     public void createAuthor(Author author) {
-        //Validating the author objects
-        if(author.getAuthorId() == null || author.getAuthorId().isEmpty()) {
-            throw new IllegalArgumentException("Error: Author ID is required as authorId and cannot be null or empty");
-        }
-
-        if(author.getAuthorName() == null || author.getAuthorName().isEmpty()) {
-            throw new IllegalArgumentException("Error: Author Name is required as authorName and cannot be null or empty");
-        }
-
         String sql = "INSERT INTO authors (author_id, author_name) VALUES (?, ?)";
         try {
             jdbcTemplate.update(sql, author.getAuthorId(), author.getAuthorName());

@@ -24,6 +24,7 @@ public class LibraryService {
     }
 
     public boolean createAuthor(Author author) {
+        //Validating while the author to be created contains all the required field or not
         validateAuthor(author);
         Optional<Author> newAuthor = getAuthor(author.getAuthorId());
         if(newAuthor.isPresent()) {
@@ -45,8 +46,11 @@ public class LibraryService {
     }
 
     public boolean updateAuthor(Author author) {
-        Optional<Author> existingAuthor = getAuthor(author.getAuthorId());
-        if(existingAuthor.isPresent()) {
+        //Validating while the author to be updated contains all the required field or not
+        validateAuthor(author);
+        Optional<Author> updatingAuthor = getAuthor(author.getAuthorId());
+        //Checking while the author to be updated exists or not
+        if(updatingAuthor.isPresent()) {
             authorRepository.updateAuthor(author);
             return true;
         }
@@ -54,8 +58,9 @@ public class LibraryService {
     }
 
     public boolean deleteAuthor(String authorId) {
-        Optional<Author> existingAuthor = getAuthor(authorId);
-        if(existingAuthor.isPresent()) {
+        //Checking while the author to be deleted exists or not
+        Optional<Author> deletingAuthor = getAuthor(authorId);
+        if(deletingAuthor.isPresent()) {
             authorRepository.deleteAuthor(authorId);
             return true;
         }
@@ -71,6 +76,7 @@ public class LibraryService {
     }
 
     public boolean createBook(Book book) {
+        //Validating while the book to be created contains all the required field or not
         validateBook(book);
         Optional<Book> newBook = getBook(book.getBookId());
         if(newBook.isPresent()) {
@@ -98,9 +104,11 @@ public class LibraryService {
     }
 
     public boolean updateBook(Book book) {
+        //Validating while the book to be updated contains all the required field or not
         validateBook(book);
-        Optional<Book> existingBook = getBook(book.getBookId());
-        if(existingBook.isPresent()) {
+        //Checking while the book to be updated exists or not
+        Optional<Book> updatingBook = getBook(book.getBookId());
+        if(updatingBook.isPresent()) {
             bookRepository.updateBook(book);
             return true;
         }
@@ -108,8 +116,9 @@ public class LibraryService {
     }
 
     public boolean deleteBook(String bookId) {
-        Optional<Book> existingBook = getBook(bookId);
-        if (existingBook.isPresent()) {
+        //Checking while the book to be deleted exists or not
+        Optional<Book> deletingBook = getBook(bookId);
+        if (deletingBook.isPresent()) {
             bookRepository.deleteBook(bookId);
             return true;
         }
