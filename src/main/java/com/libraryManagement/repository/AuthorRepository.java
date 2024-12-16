@@ -3,6 +3,8 @@ package com.libraryManagement.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.libraryManagement.model.Author;
 import com.libraryManagement.model.Book;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,6 +18,7 @@ import java.util.Optional;
 @Repository
 public class AuthorRepository {
     private final JdbcTemplate jdbcTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(AuthorRepository.class);
 
     @Autowired
     public AuthorRepository (JdbcTemplate jdbcTemplate) {
@@ -36,8 +39,17 @@ public class AuthorRepository {
     //Retrieving an author's detail by its id
     public Optional<Author> getAuthor(String authorId) {
         String sql = "SELECT * FROM authors WHERE author_id = ?";
+        logger.info("Executing SQL query to fetch the author with ID: {}", authorId);
         List<Author> authors = jdbcTemplate.query(sql, new AuthorRowMapper(), authorId);
-        return authors.isEmpty() ? Optional.empty() : Optional.of(authors.get(0));
+        logger.debug("SQL query executed successfully. Number of authors retrieved: {}", authors.size());
+        if(authors.isEmpty()) {
+            logger.warn("No author found with Id: {}", authorId);
+            return Optional.empty();
+        } else {
+            Author retrievedAuthor = authors.get(0);
+            logger.info("Author retrieved successfully");
+            return Optional.of(retrievedAuthor);
+        }
     }
 
     //Retrieving all the authors present in the database
@@ -48,14 +60,6 @@ public class AuthorRepository {
 
     //Updating the author
     public void updateAuthor(Author author) {
-        //Validating the author objects
-        if(author.getAuthorId() == null || author.getAuthorId().isEmpty()) {
-            throw new IllegalArgumentException("Error: Author ID is required as authorId and it cannot be null or empty");
-        }
-        if (author.getAuthorName() == null || author.getAuthorName().isEmpty()) {
-            throw new IllegalArgumentException(("Error: Author Name is required as authorName and it cannot be null or empty"));
-        }
-
         String sql = "UPDATE authors SET author_name = ? WHERE author_id = ?";
         try {
             int rowsAffected = jdbcTemplate.update(sql, author.getAuthorName(), author.getAuthorId());

@@ -1,9 +1,7 @@
 package com.libraryManagement.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.libraryManagement.model.Author;
 import com.libraryManagement.model.Book;
-import com.libraryManagement.service.LibraryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +44,6 @@ public class BookRepository  {
         }
     }
 
-
     //Retrieving book by ID
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
@@ -58,7 +55,7 @@ public class BookRepository  {
             return Optional.empty();
         } else {
             Book retrievedBook = books.get(0);
-            logger.info("Book retrieved successfully: {}", retrievedBook);
+            logger.info("Book retrieved successfully");
             return Optional.of(retrievedBook);
         }
     }

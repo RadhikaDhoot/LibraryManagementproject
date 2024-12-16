@@ -65,7 +65,7 @@ public class LibraryController {
         if(isDeleted) {
             return ResponseEntity.ok("Author Deleted Successfully");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete Failed");
         }
     }
 
@@ -113,7 +113,7 @@ public class LibraryController {
         if (isDeleted) {
             return ResponseEntity.ok("Book Deleted Successfully");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete Failed");
         }
     }
 
