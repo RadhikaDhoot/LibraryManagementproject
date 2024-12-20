@@ -1,4 +1,3 @@
-
 package com.libraryManagement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,10 +17,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -162,15 +164,19 @@ class LibraryServiceTests {
     @Test
     public void testUpdateAuthor() {
         String authorId = "A101";
-        //Updating the author's detail
-        Author updatedAuthor = new Author(authorId, "Jay Shetty");
-        boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
-        assertThat(isUpdated).isTrue();
+        try {
+            //Updating the author's detail
+            Author updatedAuthor = new Author(authorId, "Jay Shetty");
+            boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
+            assertThat(isUpdated).isTrue();
 
-        //Retrieving the updated author and verifying the changes
-        Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
-        assertThat(retrievedAuthor).isPresent();
-        assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo("Jay Shetty");
+            //Retrieving the updated author and verifying the changes
+            Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
+            assertThat(retrievedAuthor).isPresent();
+            assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo("Jay Shetty");
+        } catch (IllegalArgumentException e) {
+            fail("Invalid argument provided");
+        }
     }
 
     @Test
@@ -244,7 +250,7 @@ class LibraryServiceTests {
     public void testFindBookByNonExistingId() {
         String bookId = "B000";
         Optional<Book> book = libraryService.getBook(bookId);
-
+//
         if(book.isPresent()) {
             Book retrievedBook = book.get();
             assertThat(retrievedBook.getBookId()).isEqualTo(bookId);

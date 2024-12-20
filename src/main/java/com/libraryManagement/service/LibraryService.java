@@ -59,12 +59,8 @@ public class LibraryService {
 
     public boolean deleteAuthor(String authorId) {
         //Checking while the author to be deleted exists or not
-        Optional<Author> deletingAuthor = getAuthor(authorId);
-        if(deletingAuthor.isPresent()) {
-            authorRepository.deleteAuthor(authorId);
-            return true;
-        }
-        return false;
+        authorRepository.deleteAuthor(authorId);
+        return true;
     }
 
     public Optional<Author> getAuthor(String authorId) {

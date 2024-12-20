@@ -6,6 +6,9 @@ import com.libraryManagement.model.Book;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -30,8 +33,12 @@ public class AuthorRepository {
         String sql = "INSERT INTO authors (author_id, author_name) VALUES (?, ?)";
         try {
             jdbcTemplate.update(sql, author.getAuthorId(), author.getAuthorName());
-            System.out.println("Author created Successfully");
-        } catch (Exception e) {
+            logger.info("Author created Successfully");
+        } catch (DuplicateKeyException e) {
+            System.err.println("Error: authorId is a primary key and it already exists." + e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            System.err.println("Error: Missing required fields" + e.getMessage());
+        } catch (DataAccessException e) {
             System.err.println("Error while creating the author: " + e.getMessage());
         }
     }
@@ -39,23 +46,40 @@ public class AuthorRepository {
     //Retrieving an author's detail by its id
     public Optional<Author> getAuthor(String authorId) {
         String sql = "SELECT * FROM authors WHERE author_id = ?";
-        logger.info("Executing SQL query to fetch the author with ID: {}", authorId);
-        List<Author> authors = jdbcTemplate.query(sql, new AuthorRowMapper(), authorId);
-        logger.debug("SQL query executed successfully. Number of authors retrieved: {}", authors.size());
-        if(authors.isEmpty()) {
-            logger.warn("No author found with Id: {}", authorId);
-            return Optional.empty();
-        } else {
-            Author retrievedAuthor = authors.get(0);
-            logger.info("Author retrieved successfully");
-            return Optional.of(retrievedAuthor);
+        try {
+            logger.info("Executing SQL query to fetch the author with ID: {}", authorId);
+            List<Author> authors = jdbcTemplate.query(sql, new AuthorRowMapper(), authorId);
+            logger.debug("SQL query executed successfully. Number of authors retrieved: {}", authors.size());
+            if (authors.isEmpty()) {
+                logger.warn("No author found with Id: {}", authorId);
+                return Optional.empty();
+            } else {
+                Author retrievedAuthor = authors.get(0);
+                logger.info("Author retrieved successfully");
+                return Optional.of(retrievedAuthor);
+            }
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Error occurred while fetching the author", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected Error");
         }
     }
 
     //Retrieving all the authors present in the database
     public List<Author> getAllAuthor() {
         String sql = "SELECT * FROM authors ORDER BY author_id";
-        return jdbcTemplate.query(sql, new AuthorRowMapper());
+        try {
+            logger.info("Fetching all authors from the database");
+            List<Author> authors = jdbcTemplate.query(sql, new AuthorRowMapper());
+            logger.info("Successfully retrieved {} authors", authors.size());
+            return authors;
+        } catch (DataAccessException e) {
+            logger.error("Error occurred while fetching all authors: {}", e.getMessage());
+            throw new RuntimeException("Error occurred while fetching all authors: {}", e);
+        } catch (Exception e) {
+            logger.error("Unexpected error occurred while fetching while fetching all authors: {}", e.getMessage());
+            throw new RuntimeException("Unexpected error occurred while fetching while fetching all authors", e);
+        }
     }
 
     //Updating the author
@@ -64,9 +88,17 @@ public class AuthorRepository {
         try {
             int rowsAffected = jdbcTemplate.update(sql, author.getAuthorName(), author.getAuthorId());
             if (rowsAffected == 0) {
+                logger.warn("No author found with ID: {}", author.getAuthorId());
                 throw new RuntimeException("No author found with ID: " + author.getAuthorId());
+            } else {
+                logger.info("Author updated successfully {}", author);
             }
-        } catch (Exception e) {
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Error: Missing required fields for author '{}' : {}", author, e.getMessage());
+        } catch (DataAccessException e) {
+            logger.error("Error occurred while updating the author '{}' : {}", author, e.getMessage());
+        }
+        catch (Exception e) {
             System.err.println("Error updating the author: " + e.getMessage());
             e.printStackTrace();
         }
@@ -75,7 +107,19 @@ public class AuthorRepository {
     //Deleting the author
     public void deleteAuthor(String authorId) {
         String sql = "DELETE FROM authors WHERE author_id = ?";
-        jdbcTemplate.update(sql, authorId);
+        try {
+            int rowsAffected = jdbcTemplate.update(sql, authorId);
+            if(rowsAffected == 0) {
+                logger.warn("No author found with ID: {}", authorId);
+                throw new DataAccessException("No author found with ID: " + authorId) {};
+            } else {
+                logger.info("Author with ID '{}' deleted successfully", authorId);
+            }
+        } catch (DataAccessException e) {
+            logger.error("Error deleting the author with ID '{}'", authorId);
+        } catch (Exception e) {
+            logger.error("Unexpected error for deleting the author", e);
+        }
     }
 
     private static class AuthorRowMapper implements RowMapper<Author> {
