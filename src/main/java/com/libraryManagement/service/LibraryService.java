@@ -46,7 +46,8 @@ public class LibraryService {
     }
 
     public boolean updateAuthor(Author author) {
-        //Validating while the author to be updated contains all the required field or not
+
+       //Validating while the author to be updated contains all the required field or not
         validateAuthor(author);
         Optional<Author> updatingAuthor = getAuthor(author.getAuthorId());
         //Checking while the author to be updated exists or not
@@ -59,8 +60,12 @@ public class LibraryService {
 
     public boolean deleteAuthor(String authorId) {
         //Checking while the author to be deleted exists or not
-        authorRepository.deleteAuthor(authorId);
-        return true;
+        Optional<Author> deletingAuthor = getAuthor(authorId);
+        if(deletingAuthor.isPresent()) {
+            authorRepository.deleteAuthor(authorId);
+            return true;
+        }
+        return false;
     }
 
     public Optional<Author> getAuthor(String authorId) {

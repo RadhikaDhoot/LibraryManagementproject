@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -35,11 +36,11 @@ public class AuthorRepository {
             jdbcTemplate.update(sql, author.getAuthorId(), author.getAuthorName());
             logger.info("Author created Successfully");
         } catch (DuplicateKeyException e) {
-            System.err.println("Error: authorId is a primary key and it already exists." + e.getMessage());
+            logger.error("Error: authorId is a primary key and it already exists. {}", e.getMessage());
         } catch (DataIntegrityViolationException e) {
-            System.err.println("Error: Missing required fields" + e.getMessage());
+            logger.error("Error: Missing required fields: {}", e.getMessage());
         } catch (DataAccessException e) {
-            System.err.println("Error while creating the author: " + e.getMessage());
+            logger.error("Error while creating the author: {}", e.getMessage());
         }
     }
 
@@ -60,8 +61,6 @@ public class AuthorRepository {
             }
         } catch (DataAccessException e) {
             throw new RuntimeException("Error occurred while fetching the author", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected Error");
         }
     }
 
@@ -77,8 +76,8 @@ public class AuthorRepository {
             logger.error("Error occurred while fetching all authors: {}", e.getMessage());
             throw new RuntimeException("Error occurred while fetching all authors: {}", e);
         } catch (Exception e) {
-            logger.error("Unexpected error occurred while fetching while fetching all authors: {}", e.getMessage());
-            throw new RuntimeException("Unexpected error occurred while fetching while fetching all authors", e);
+            logger.error("Unexpected error occurred while fetching all authors: {}", e.getMessage());
+            throw new RuntimeException("Unexpected error occurred while fetching all authors", e);
         }
     }
 
@@ -86,36 +85,25 @@ public class AuthorRepository {
     public void updateAuthor(Author author) {
         String sql = "UPDATE authors SET author_name = ? WHERE author_id = ?";
         try {
-            int rowsAffected = jdbcTemplate.update(sql, author.getAuthorName(), author.getAuthorId());
-            if (rowsAffected == 0) {
-                logger.warn("No author found with ID: {}", author.getAuthorId());
-                throw new RuntimeException("No author found with ID: " + author.getAuthorId());
-            } else {
-                logger.info("Author updated successfully {}", author);
-            }
+            jdbcTemplate.update(sql, author.getAuthorName(), author.getAuthorId());
+            logger.info("Author updated successfully {}", author);
         } catch (DataIntegrityViolationException e) {
             logger.error("Error: Missing required fields for author '{}' : {}", author, e.getMessage());
         } catch (DataAccessException e) {
             logger.error("Error occurred while updating the author '{}' : {}", author, e.getMessage());
-        }
-        catch (Exception e) {
-            System.err.println("Error updating the author: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.error("Error updating the author: {}",e.getMessage());
         }
     }
 
-    //Deleting the author
     public void deleteAuthor(String authorId) {
         String sql = "DELETE FROM authors WHERE author_id = ?";
         try {
-            int rowsAffected = jdbcTemplate.update(sql, authorId);
-            if(rowsAffected == 0) {
-                logger.warn("No author found with ID: {}", authorId);
-                throw new DataAccessException("No author found with ID: " + authorId) {};
-            } else {
-                logger.info("Author with ID '{}' deleted successfully", authorId);
-            }
-        } catch (DataAccessException e) {
+            jdbcTemplate.update(sql, authorId);
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error while deleting the author: {}", e.getMessage());
+        }
+        catch (DataAccessException e) {
             logger.error("Error deleting the author with ID '{}'", authorId);
         } catch (Exception e) {
             logger.error("Unexpected error for deleting the author", e);

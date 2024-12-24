@@ -38,27 +38,42 @@ public class LibraryController {
     //Creating a new author record
     @PostMapping("/authors")
     public ResponseEntity<String> createAuthor(@RequestBody Author author) {
-        boolean isCreated = libraryService.createAuthor(author);
-        if(isCreated) {
-            return ResponseEntity.ok("Author Created Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author already exist");
+        try {
+            boolean isCreated = libraryService.createAuthor(author);
+            if (isCreated) {
+                return ResponseEntity.ok("Author Created Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Author already exist");
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Check the variables name");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
 
     //Updating details of an existing author
     @PutMapping("/authors/{authorId}")
     public ResponseEntity<String> updateAuthor(@PathVariable("authorId") String authorId, @RequestBody Author author) {
-        author.setAuthorId(authorId);
-        boolean isUpdated = libraryService.updateAuthor(author);
-        if(isUpdated) {
-            return ResponseEntity.ok("Author Updated Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found or Update Failed");
+        try {
+            //Check if the author exists
+            Optional<Author> existingAuthor = libraryService.getAuthor(authorId);
+            if(existingAuthor.isEmpty())
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author not found with ID: " + authorId);
+            boolean isUpdated = libraryService.updateAuthor(author);
+            if (isUpdated) {
+                return ResponseEntity.ok("Author Updated Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found or Update Failed");
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
 
-    //Deleting a author record using its id
+    //Deleting an author record using its id
     @DeleteMapping("/authors/{authorId}")
     public ResponseEntity<String> deleteAuthorDetails(@PathVariable("authorId") String authorId) {
         boolean isDeleted = libraryService.deleteAuthor(authorId);
@@ -86,23 +101,37 @@ public class LibraryController {
     //Creating a new book record
     @PostMapping("/books")
     public ResponseEntity<String> createBook(@RequestBody Book book) {
-        boolean isCreated = libraryService.createBook(book);
-        if (isCreated) {
-            return ResponseEntity.ok("Book Created Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book already exists");
+        try {
+            boolean isCreated = libraryService.createBook(book);
+            if (isCreated) {
+                return ResponseEntity.ok("Book Created Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book already exists");
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Check the variables names");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
 
     //Updating details of an existing book
     @PutMapping("/books/{bookId}")
     public ResponseEntity<String> updateBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {
-        book.setBookId(bookId);
-        boolean isUpdated = libraryService.updateBook(book);
-        if(isUpdated) {
-            return ResponseEntity.ok("Book Updated Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found or Update Failed");
+        try {
+            //Check if the book exists
+            Optional<Book> existingBook = libraryService.getBook(bookId);
+            if(existingBook.isPresent())
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found with ID: " + bookId);
+            book.setBookId(bookId);
+            boolean isUpdated = libraryService.updateBook(book);
+            if(isUpdated) {
+                return ResponseEntity.ok("Book Updated Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book Not Found or Update Failed");
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
