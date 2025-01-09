@@ -13,7 +13,6 @@ import java.util.Optional;
 
 @Service
 public class LibraryService {
-
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -46,7 +45,6 @@ public class LibraryService {
     }
 
     public boolean updateAuthor(Author author) {
-
        //Validating while the author to be updated contains all the required field or not
         validateAuthor(author);
         Optional<Author> updatingAuthor = getAuthor(author.getAuthorId());
@@ -69,10 +67,12 @@ public class LibraryService {
     }
 
     public Optional<Author> getAuthor(String authorId) {
+        //Get the author by its author ID
         return authorRepository.getAuthor(authorId);
     }
 
     public List<Author> getAllAuthors() {
+        //Getting all the authors
         return authorRepository.getAllAuthor();
     }
 
@@ -139,5 +139,15 @@ public class LibraryService {
                 "FROM books b JOIN authors a " +
                 "ON b.book_author = a.author_name";
         return jdbcTemplate.queryForList(sql);
+    }
+
+    public int deleteBooksByAuthorName(String authorName) {
+        int rowsAffected = bookRepository.deleteBooksByAuthorName(authorName);
+        if (rowsAffected > 0) {
+            System.out.println("Deleted " + rowsAffected + " books for author: " + authorName);
+        } else {
+            System.out.println("No books found for author: " + authorName);
+        }
+        return rowsAffected;
     }
 }

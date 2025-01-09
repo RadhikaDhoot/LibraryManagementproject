@@ -18,7 +18,6 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +29,7 @@ public class BookRepository  {
 
     @Autowired
     private final JdbcTemplate jdbcTemplate;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new ObjectMapper();
 
     public BookRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -56,47 +55,9 @@ public class BookRepository  {
     }
 
     //Retrieving book by ID
-//    public Optional<Book> getBook(String bookId) {
-//        String sql = "SELECT * FROM books where book_id = ?";
-//        logger.info("Executing SQL query to fetch the book ID: {}", bookId);
-//        Book books = jdbcTemplate.query(sql, rs -> {
-//            if (rs.next()) {
-//                Book extractedBook = new Book();
-//                extractedBook.setBookId(rs.getString("book_id"));
-//                extractedBook.setBookAuthor(rs.getString("book_author"));
-//                extractedBook.setBookTitle(rs.getString("book_title"));
-//                String bookDetailJson = rs.getString("book_detail");
-//
-//                LobHandler lobHandler = new DefaultLobHandler();
-//                bookDetailJson = lobHandler.getClobAsString(rs, "book_detail");
-//                logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
-//                try {
-//                    ObjectMapper objectMapper = new ObjectMapper();
-//                    JsonNode bookDetail = objectMapper.readTree(bookDetailJson);
-//                    extractedBook.setBookDetail(bookDetail);
-//                    logger.info("Parsed JSON Node: {}", bookDetail);
-//                } catch (Exception e) {
-//                    throw new RuntimeException("Error while reading book_detail from JSON", e);
-//                }
-//                logger.info("Successfully mapped book with bookDetail: {}", extractedBook.getBookDetail());
-//                return extractedBook;
-//            }
-//            return null;
-//        }, bookId);
-//
-//        if(books == null) {
-//            logger.warn("No book found with Id: {}", bookId);
-//            return Optional.empty();
-//        } else {
-//            logger.info("Book retrieved successfully: {}", books);
-//            return Optional.of(books);
-//        }
-//    }
-
-    //Retrieving book by ID
     public Optional<Book> getBook(String bookId) {
         String sql = "SELECT * FROM books where book_id = ?";
-        logger.info("Executing SQL query to fetch the book ID: {}", bookId);
+        logger.info("Executing SQL query to fetch the book with ID: {}", bookId);
         List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(new ObjectMapper()), bookId);
         logger.debug("SQL query executed successfully. Number of books retrieved: {}", books.size());
         if(books.isEmpty()) {
@@ -108,25 +69,6 @@ public class BookRepository  {
             return Optional.of(retrievedBook);
         }
     }
-
-//    public Optional<Author> getAuthor(String authorId) {
-//        String sql = "SELECT * FROM authors WHERE author_id = ?";
-//        try {
-//            logger.info("Executing SQL query to fetch the author with ID: {}", authorId);
-//            List<Author> authors = jdbcTemplate.query(sql, new AuthorRepository.AuthorRowMapper(), authorId);
-//            logger.debug("SQL query executed successfully. Number of authors retrieved: {}", authors.size());
-//            if (authors.isEmpty()) {
-//                logger.warn("No author found with Id: {}", authorId);
-//                return Optional.empty();
-//            } else {
-//                Author retrievedAuthor = authors.get(0);
-//                logger.info("Author retrieved successfully");
-//                return Optional.of(retrievedAuthor);
-//            }
-//        } catch (DataAccessException e) {
-//            throw new RuntimeException("Error occurred while fetching the author", e);
-//        }
-//    }
 
    // Retrieving all the books available in the database
     public List<Book> getAllBooks() {
@@ -145,7 +87,7 @@ public class BookRepository  {
         }
     }
 
-    //Updating an existing book
+    //Updating an existing book in the database
     public void updateBook(Book book) {
         String sql = "UPDATE books SET book_author = ?, book_title = ?, book_detail = ?::jsonb WHERE book_id = ?";
         try {
@@ -159,24 +101,6 @@ public class BookRepository  {
         }
     }
 
-//    //Updating the author
-//    public void updateAuthor(Author author) {
-//        String sql = "UPDATE authors SET author_name = ? WHERE author_id = ?";
-//        try {
-//            int rowsAffected = jdbcTemplate.update(sql, author.getAuthorName(), author.getAuthorId());
-//            if (rowsAffected == 0) {
-//                logger.warn("No author found with ID: {}", author.getAuthorId());
-//                throw new RuntimeException("No author found with ID: " + author.getAuthorId());
-//            }
-//            logger.info("Author updated successfully {}", author);
-//        } catch (DataIntegrityViolationException e) {
-//            logger.error("Error: Missing required fields for author '{}' : {}", author, e.getMessage());
-//        } catch (DataAccessException e) {
-//            logger.error("Error occurred while updating the author '{}' : {}", author, e.getMessage());
-//        } catch (Exception e) {
-//            logger.error("Error updating the author: {}",e.getMessage());
-//        }
-//    }
     //Deleting a book from database
     public void deleteBook(String bookId) {
         String sql = "DELETE FROM books WHERE book_id = ?";
@@ -191,9 +115,16 @@ public class BookRepository  {
         }
     }
 
+    public int deleteBooksByAuthorName(String authorName) {
+        String sql = "DELETE FROM books " +
+                "USING authors " +
+                "WHERE books.book_author = authors.author_name " +
+                "AND authors.author_name = ?;";
+        return jdbcTemplate.update(sql, authorName);
+    }
+
     private static class BookRowMapper implements RowMapper<Book> {
         private final ObjectMapper objectMapper;
-
         public BookRowMapper(ObjectMapper objectMapper) {
             this.objectMapper = objectMapper;
         }
@@ -204,9 +135,9 @@ public class BookRepository  {
             book.setBookId(rs.getString("book_id"));
             book.setBookAuthor(rs.getString("book_author"));
             book.setBookTitle(rs.getString("book_title"));
-            String bookDetailJson = rs.getString("book_detail");
+//            String bookDetailJson = rs.getString("book_detail");
             LobHandler lobHandler = new DefaultLobHandler();
-            bookDetailJson = lobHandler.getClobAsString(rs,"book_detail");
+            String bookDetailJson = lobHandler.getClobAsString(rs,"book_detail");
             logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
             try {
                 JsonNode bookDetail = objectMapper.readTree(bookDetailJson);

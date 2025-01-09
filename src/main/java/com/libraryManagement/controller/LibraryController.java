@@ -3,9 +3,13 @@ package com.libraryManagement.controller;
 import com.libraryManagement.model.Book;
 import com.libraryManagement.model.Author;
 import com.libraryManagement.service.LibraryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +20,7 @@ import java.util.Optional;
 public class LibraryController {
 
     private final LibraryService libraryService;
+    private static final Logger logger = LoggerFactory.getLogger(LibraryController.class);
     @Autowired
     public LibraryController(LibraryService libraryService) {
         this.libraryService = libraryService;
@@ -76,11 +81,22 @@ public class LibraryController {
     //Deleting an author record using its id
     @DeleteMapping("/authors/{authorId}")
     public ResponseEntity<String> deleteAuthorDetails(@PathVariable("authorId") String authorId) {
-        boolean isDeleted = libraryService.deleteAuthor(authorId);
-        if(isDeleted) {
-            return ResponseEntity.ok("Author Deleted Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete Failed");
+        try {
+            boolean isDeleted = libraryService.deleteAuthor(authorId);
+            if (isDeleted) {
+                return ResponseEntity.ok("Author Deleted Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete Failed");
+            }
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error while deleting author with ID {}:{}", authorId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: " + e.getMessage());
+        } catch (DataAccessException e) {
+            logger.error("Database error occurred while deleting the author with ID {}:{}", authorId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Database error occurred: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error occurred while deleting the author with ID {}:{}", authorId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred" + e.getMessage());
         }
     }
 
@@ -151,4 +167,26 @@ public class LibraryController {
     public List<Map<String, Object>> booksJoinAuthors() {
         return libraryService.booksJoinAuthors();
     }
+
+    @DeleteMapping("/deleteBooksByAuthorName/{authorName}")
+    public ResponseEntity<String> deleteBooksByAuthorName(@PathVariable String authorName) {
+        try {
+            int rowsDeleted = libraryService.deleteBooksByAuthorName(authorName);
+            if (rowsDeleted > 0) {
+                return ResponseEntity.ok("Successfully deleted " + rowsDeleted + " books for author: " + authorName);
+            } else {
+                return ResponseEntity.ok("No books found for author: " + authorName);
+            }
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error: " + e.getMessage());
+        } catch (DataAccessException e) {
+            logger.error("Data access error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Data access error: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
+        }
+    }
+
 }

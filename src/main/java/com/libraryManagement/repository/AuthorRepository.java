@@ -1,15 +1,12 @@
 package com.libraryManagement.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.libraryManagement.model.Author;
-import com.libraryManagement.model.Book;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -92,22 +89,14 @@ public class AuthorRepository {
         } catch (DataAccessException e) {
             logger.error("Error occurred while updating the author '{}' : {}", author, e.getMessage());
         } catch (Exception e) {
-            logger.error("Error updating the author: {}",e.getMessage());
+            logger.error("Error updating the author: {}", e.getMessage());
         }
     }
 
+    //Deleting the author
     public void deleteAuthor(String authorId) {
         String sql = "DELETE FROM authors WHERE author_id = ?";
-        try {
-            jdbcTemplate.update(sql, authorId);
-        } catch (BadSqlGrammarException e) {
-            logger.error("SQL syntax error while deleting the author: {}", e.getMessage());
-        }
-        catch (DataAccessException e) {
-            logger.error("Error deleting the author with ID '{}'", authorId);
-        } catch (Exception e) {
-            logger.error("Unexpected error for deleting the author", e);
-        }
+        jdbcTemplate.update(sql, authorId);
     }
 
     private static class AuthorRowMapper implements RowMapper<Author> {

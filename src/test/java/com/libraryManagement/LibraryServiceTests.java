@@ -31,7 +31,7 @@ import java.util.Optional;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class LibraryServiceTests {
+public class LibraryServiceTests {
     private static final Logger logger = LoggerFactory.getLogger(LibraryServiceTests.class);
 
     @Autowired
@@ -210,9 +210,9 @@ class LibraryServiceTests {
             assertThat(addedBook.getBookAuthor()).isEqualTo("Heidi");
             assertThat(addedBook.getBookTitle()).isEqualTo("Johanna Spyri");
 
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            JsonNode retrievedBookDetail = objectMapper.readTree(addedBook.getBookDetail().toString());
-//            assertThat(retrievedBookDetail).isEqualTo(bookDetail);
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode retrievedBookDetail = objectMapper.readTree(addedBook.getBookDetail().asText());
+            assertThat(retrievedBookDetail).isEqualTo(bookDetail);
         } else {
             logger.error("Added book is not found in the database");
         }
@@ -239,7 +239,7 @@ class LibraryServiceTests {
             assertThat(retrievedBook.getBookTitle()).isEqualTo("Do It Today");
 //            ObjectMapper objectMapper = new ObjectMapper();
 //            JsonNode expectedDetails = objectMapper.readTree("{\"publishing year\": \"2018\", \"genre\": \"Motivational\"}");
-//            assertThat(retrievedBook.getBookDetail()).isEqualTo(expectedDetails);
+//            assertThat(retrievedBook.getBookDetail().asText()).isEqualTo(expectedDetails);
             logger.info("Book details successfully validated: {}, retrievedBook", bookId);
         } else {
             logger.warn("Book with Id: {} does not exist", bookId);
