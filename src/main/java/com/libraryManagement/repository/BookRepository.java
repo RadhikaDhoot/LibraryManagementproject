@@ -1,16 +1,10 @@
 package com.libraryManagement.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.libraryManagement.model.Author;
 import com.libraryManagement.model.Book;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.jpa.repository.query.BadJpqlGrammarException;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
@@ -40,18 +34,9 @@ public class BookRepository  {
         String sql = "INSERT INTO books(book_id, book_author, book_title, book_detail) VALUES (?, ?, ?, ?::jsonb)";
         logger.info("Book details to insert - bookId: {}, bookAuthor: {}, bookTitle: {}, bookDetail: {}",
                 book.getBookId(), book.getBookAuthor(), book.getBookTitle(), book.getBookDetail());
-        try {
-            String bookDetailJson = book.getBookDetail().toString();
-            jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);
-            logger.info("SQL executed successfully. Book created in the database");
-        } catch (DuplicateKeyException e) {
-            logger.error("Error: book ID is a primary key and it already exists. {}", e.getMessage(), e);
-            e.printStackTrace();
-        } catch (DataIntegrityViolationException e) {
-            logger.error("Error: Missing required fields: {}", e.getMessage());
-        } catch (DataAccessException e) {
-            logger.error("Error while creating the author: {}", e.getMessage());
-        }
+        String bookDetailJson = book.getBookDetail().toString();
+        jdbcTemplate.update(sql, book.getBookId(), book.getBookAuthor(), book.getBookTitle(), bookDetailJson);
+        logger.info("SQL executed successfully. Book created in the database");
     }
 
     //Retrieving book by ID
@@ -73,18 +58,10 @@ public class BookRepository  {
    // Retrieving all the books available in the database
     public List<Book> getAllBooks() {
         String sql = "SELECT * FROM books ORDER BY book_id";
-        try {
-            logger.info("Fetching all books from the database");
-            List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(new ObjectMapper()));
-            logger.info("Successfully retrieved {} books", books.size());
-            return books;
-        } catch (DataAccessException e) {
-            logger.error("Error occurred while fetching all books: {}", e.getMessage());
-            throw new RuntimeException("Error occurred while fetching all books: {}", e);
-        } catch (Exception e) {
-            logger.error("Unexpected error occurred while fetching all books: {}", e.getMessage());
-            throw new RuntimeException("Unexpected error occurred while fetching all the book");
-        }
+        logger.info("Fetching all books from the database");
+        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(new ObjectMapper()));
+        logger.info("Successfully retrieved {} books", books.size());
+        return books;
     }
 
     //Updating an existing book in the database
@@ -104,15 +81,7 @@ public class BookRepository  {
     //Deleting a book from database
     public void deleteBook(String bookId) {
         String sql = "DELETE FROM books WHERE book_id = ?";
-        try {
-            jdbcTemplate.update(sql, bookId);
-        } catch (BadSqlGrammarException e) {
-            logger.error("SQL syntax error while deleting the book: {}", e.getMessage());
-        } catch (DataAccessException e) {
-            logger.error("Error deleting the author with book ID {}", bookId);
-        } catch (Exception e) {
-            logger.error("Unexpected error while deleting the book", e);
-        }
+        jdbcTemplate.update(sql, bookId);
     }
 
     public int deleteBooksByAuthorName(String authorName) {

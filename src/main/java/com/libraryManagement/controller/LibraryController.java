@@ -28,16 +28,33 @@ public class LibraryController {
 
     // Fetching a specific author by its id
     @GetMapping("/authors/{authorId}")
-    public ResponseEntity<Author> getAuthorDetails(@PathVariable("authorId") String authorId) {
-        Optional<Author> author = libraryService.getAuthor(authorId);
-        return author.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> getAuthorDetails(@PathVariable("authorId") String authorId) {
+        try {
+            Optional<Author> author = libraryService.getAuthor(authorId);
+            return author.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error fetching the author: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + e.getMessage());
+        }
     }
 
     //Fetching the list of authors
     @GetMapping("/authors")
-    public List<Author> getAllAuthor() {
-        return libraryService.getAllAuthors();
+    public ResponseEntity<?> getAllAuthor() {
+        try {
+            List<Author> authors = libraryService.getAllAuthors();
+            return ResponseEntity.ok(authors);
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error while fetching the authors: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + e.getMessage());
+        }
     }
 
     //Creating a new author record
@@ -48,11 +65,19 @@ public class LibraryController {
             if (isCreated) {
                 return ResponseEntity.ok("Author Created Successfully");
             } else {
+                logger.error("Author already exists");
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Author already exist");
             }
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL Syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Check the variables name");
+        } catch (DataAccessException e) {
+            logger.error("Error occurred while creating the author '{}' : {}", author, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while creating the author: {}" + e.getMessage());
         } catch (Exception e) {
+            logger.error("Error while creating the author: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
@@ -71,9 +96,17 @@ public class LibraryController {
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Author Not Found or Update Failed");
             }
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL Syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
         } catch (IllegalArgumentException e) {
+            logger.error("Error: Missing required fields for author '{}' : {}", author, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (DataAccessException e) {
+            logger.error("Error occurred while updating the author '{}' : {}", author, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while updating the author: {}" + e.getMessage());
         } catch (Exception e) {
+            logger.error("Error while updating the author: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
@@ -102,18 +135,34 @@ public class LibraryController {
 
     //Fetching details of a specific book by its id
     @GetMapping("/books/{bookId}")
-    public ResponseEntity<Book> getBookDetails(@PathVariable("bookId") String bookId) {
-        Optional<Book> book = libraryService.getBook(bookId);
-        return book.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<?> getBookDetails(@PathVariable("bookId") String bookId) {
+        try {
+            Optional<Book> book = libraryService.getBook(bookId);
+            return book.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error fetching the book: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + e.getMessage());
+        }
     }
 
     //Fetching the list of books
     @GetMapping("/books")
-    public List<Book> getAllBooks() {
-        return libraryService.getAllBooks();
+    public ResponseEntity<?> getAllBooks() {
+        try {
+            List<Book> books = libraryService.getAllBooks();
+            return ResponseEntity.ok(books);
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error while fetching the books: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + e.getMessage());
+        }
     }
-
     //Creating a new book record
     @PostMapping("/books")
     public ResponseEntity<String> createBook(@RequestBody Book book) {
@@ -122,11 +171,19 @@ public class LibraryController {
             if (isCreated) {
                 return ResponseEntity.ok("Book Created Successfully");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book already exists");
+                logger.error("Book already exists");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Book already exist");
             }
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL Syntax error {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Check the variables names");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Check the variables name");
+        } catch (DataAccessException e) {
+            logger.error("Error occurred while creating the book '{}' : {}", book, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while creating the book: {}" + e.getMessage());
         } catch (Exception e) {
+            logger.error("Error while creating the book: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
@@ -154,11 +211,22 @@ public class LibraryController {
     //Deleting a book record using its id
     @DeleteMapping("/books/{bookId}")
     public ResponseEntity<String> deleteBookDetails(@PathVariable("bookId") String bookId) {
-        boolean isDeleted = libraryService.deleteBook(bookId);
-        if (isDeleted) {
-            return ResponseEntity.ok("Book Deleted Successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete Failed");
+        try {
+            boolean isDeleted = libraryService.deleteBook(bookId);
+            if (isDeleted) {
+                return ResponseEntity.ok("Book Deleted Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete Failed");
+            }
+        } catch (BadSqlGrammarException e) {
+            logger.error("SQL syntax error while deleting book with ID {}:{}", bookId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred on deleting the book: " + e.getMessage());
+        } catch (DataAccessException e) {
+            logger.error("Database error occurred while deleting the book with ID {}:{}", bookId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Database error occurred: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error occurred while deleting the book with ID {}:{}", bookId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred" + e.getMessage());
         }
     }
 

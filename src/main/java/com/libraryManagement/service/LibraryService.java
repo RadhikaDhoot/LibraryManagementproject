@@ -23,8 +23,6 @@ public class LibraryService {
     }
 
     public boolean createAuthor(Author author) {
-        //Validating while the author to be created contains all the required field or not
-        validateAuthor(author);
         Optional<Author> newAuthor = getAuthor(author.getAuthorId());
         if(newAuthor.isPresent()) {
             return false;
@@ -34,19 +32,7 @@ public class LibraryService {
         }
     }
 
-    private void validateAuthor(Author author) {
-        //Validating the author objects
-        if(author.getAuthorId() == null || author.getAuthorId().isEmpty()) {
-            throw new IllegalArgumentException("Error: Author Id is required as authorId and it cannot be null or empty");
-        }
-        if(author.getAuthorName() == null || author.getAuthorName().isEmpty()) {
-            throw new IllegalArgumentException("Error: Author Name is required as authorName and it cannot be null or empty");
-        }
-    }
-
     public boolean updateAuthor(Author author) {
-       //Validating while the author to be updated contains all the required field or not
-        validateAuthor(author);
         Optional<Author> updatingAuthor = getAuthor(author.getAuthorId());
         //Checking while the author to be updated exists or not
         if(updatingAuthor.isPresent()) {
