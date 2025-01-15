@@ -141,11 +141,11 @@ public class LibraryController {
             return book.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         } catch (BadSqlGrammarException e) {
-            logger.error("SQL syntax error {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL syntax error occurred: {}" + e.getMessage());
+            logger.error("SQL Syntax error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SQL Syntax error occurred: {}" + e.getMessage());
         } catch (Exception e) {
-            logger.error("Error fetching the book: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + e.getMessage());
+            logger.error("Error fetching the book: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred" + e.getMessage() + e);
         }
     }
 

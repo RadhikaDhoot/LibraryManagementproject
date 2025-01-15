@@ -107,15 +107,15 @@ public class BookRepository  {
 //            String bookDetailJson = rs.getString("book_detail");
             LobHandler lobHandler = new DefaultLobHandler();
             String bookDetailJson = lobHandler.getClobAsString(rs,"book_detail");
-            logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
+           // logger.info("Raw JSON String retrieved from database: {}", bookDetailJson);
             try {
                 JsonNode bookDetail = objectMapper.readTree(bookDetailJson);
                 book.setBookDetail(bookDetail);
-                logger.info("Parsed JSON Node: {}", bookDetail);
+              //  logger.info("Parsed JSON Node: {}", bookDetail);
             } catch (Exception e) {
                 throw new RuntimeException("Error while reading book_detail from JSON", e);
             }
-            logger.info("Successfully mapped book with bookDetail: {}", book.getBookDetail());
+           // logger.info("Successfully mapped book with bookDetail: {}", book.getBookDetail());
             return book;
         }
     }
