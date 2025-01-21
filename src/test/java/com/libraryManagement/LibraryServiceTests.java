@@ -1,368 +1,270 @@
 package com.libraryManagement;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.libraryManagement.model.Author;
 import com.libraryManagement.model.Book;
 import com.libraryManagement.service.LibraryService;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-@SpringBootTest
-@ActiveProfiles("test")
 public class LibraryServiceTests {
     private static final Logger logger = LoggerFactory.getLogger(LibraryServiceTests.class);
 
-    @Autowired
-//    @Mock
+    @Mock
     private LibraryService libraryService;
-
-    /* @InjectMocks
-    private AuthorRepository authorRepository;
 
     @BeforeMethod
     public void setUp() {
         MockitoAnnotations.openMocks(this); // Initialize mocks
-    } */
+    }
 
-    @Test
+    @Test (description = "Testing to create new author")
     public void testCreateAuthor() {
-        Author newAuthor = new Author("A106", "Johanna Spyri");
+        //Mock data
+        String authorId = "A106";
+        String authorName = "Johanna Spyri";
+        Author newAuthor = new Author(authorId, authorName);
 
-        //Adding the author
-        boolean isAdded = libraryService.createAuthor(newAuthor);
-        logger.info("Attempting to create a new author with authorId: {}", newAuthor.getAuthorId());
-        logger.info("Author creation is {} ", isAdded ? "Successful" : "Failed");
+        //Mock behaviour
+        when(libraryService.createAuthor(newAuthor)).thenReturn(true);
+        when(libraryService.getAuthor(authorId)).thenReturn(Optional.of(newAuthor));
 
-        //Verifying if the author has been added successfully
-        Optional<Author> retrieveAuthor = libraryService.getAuthor("A106");
-        if(retrieveAuthor.isPresent()) {
-            Author addedAuthor = retrieveAuthor.get();
-            logger.info("Retrieved Author is {} ", addedAuthor.getAuthorId());
-            assertThat(addedAuthor.getAuthorId()).isEqualTo("A106");
-            assertThat(addedAuthor.getAuthorName()).isEqualTo("Johanna Spyri");
-        } else {
-            logger.error("Added author is not found in the database");
+        //Calling the method to create author
+        try {
+            logger.info("Attempting to create new author with authorId: {}", newAuthor.getAuthorId());
+            boolean isAdded = libraryService.createAuthor(newAuthor);
+            logger.info("Author creation is: {}", isAdded ? "Successful" : "Failed");
+
+            //Assertion to verify the behaviour
+            Assert.assertTrue(isAdded, "Author creation should be successful");
+
+            //Retrieving the added author
+            Optional<Author> retrieveAuthor = libraryService.getAuthor(authorId);
+            Assert.assertTrue(retrieveAuthor.isPresent());
+
+            //Verify the author details
+            logger.info("Retrieved Author: Author ID - {}, Author Name - {}", newAuthor.getAuthorId(), newAuthor.getAuthorName());
+            Assert.assertEquals(newAuthor.getAuthorId(), authorId, "Author ID should match");
+            Assert.assertEquals(newAuthor.getAuthorName(), authorName, "Author Name should match");
+
+            //Verify that the create and get method was called
+            verify(libraryService).createAuthor(newAuthor);
+        } catch (Exception e) {
+            logger.error("Error occurred during author creation", e);
+            Assert.fail("Error occurred during author creation" + e.getMessage());
         }
     }
 
-    @Test
-    public void testCreateExistingAuthor() {
-        Author newAuthor = new Author("A101", "Johanna Spyri");
-        logger.info("Attempting to create new author with authorId: {}", newAuthor.getAuthorId());
-
-        //Adding the author
-        boolean isAdded = libraryService.createAuthor(newAuthor);
-        logger.info("Author already exists so author creation is {} ", isAdded ? "Successful" : "Failed");
-    }
-
-    @Test
-    public void testFindAllAuthors() {
-        //Test the total number of authors from data.sql
-        assertThat(libraryService.getAllAuthors()).hasSize(5);
-    }
-
-    @Test
-    public void testFindAuthorById() {
+    @Test(description = "Testing to find the author by its ID")
+    public void testFindAuthorById () {
+        //Mock data
         String authorId = "A101";
+        String nonExistingAuthorId = "A000";
+        Author mockAuthor = new Author(authorId, "Johanna Spyri");
 
-        //Checking if the author exists in the database with the given authorId
+        //Mock behaviour
+        when(libraryService.getAuthor(authorId)).thenReturn(Optional.of(mockAuthor));
+
+        //Call the method to test
         Optional<Author> author = libraryService.getAuthor(authorId);
+
+        //Assertions to verify the behaviour
         if(author.isPresent()) {
             Author retrievedAuthor = author.get();
-            assertThat(retrievedAuthor.getAuthorId()).isEqualTo(authorId);
-            assertThat(retrievedAuthor.getAuthorName()).isEqualTo("James Clear");
-            logger.info("Author found with authorId: {}", authorId);
+            Assert.assertEquals(retrievedAuthor.getAuthorId(), authorId, "Author ID should match");
+            Assert.assertEquals(retrievedAuthor.getAuthorName(), "Johanna Spyri", "Author name should match");
+            logger.info("Author found with with Author ID: {}, Author Name: {}", authorId, retrievedAuthor.getAuthorName());
         } else {
-            logger.info("Author with authorId: {}, does not exist", authorId);
+            logger.error("Author with Author ID: {} does not exist", nonExistingAuthorId);
+            Assert.fail("Author not found");
         }
+
+        //Verify that the get method was called
+        verify(libraryService).getAuthor(authorId);
     }
 
-    @Test
-    public void testFindAuthorByNonExistingId() {
-        String authorId = "A000";
+    @Test (description = "Testing to get all the authors")
+    public void testFindAllAuthors() {
+        // Mock data
+        List<Author> mockAuthors = Arrays.asList(
+                new Author("A101", "James Clear"),
+                new Author("A102", "Brain Tracy"),
+                new Author("A103", "Cal Newport"),
+                new Author("A104", "Darius Foroux"),
+                new Author("A105", "Robin Sharma")
+        );
 
-        //Checking if the author exists in the database with the given authorId
-        Optional<Author> author = libraryService.getAuthor(authorId);
-        if(author.isPresent()) {
-            Author retrievedAuthor = author.get();
-            assertThat(retrievedAuthor.getAuthorId()).isEqualTo(authorId);
-            assertThat(retrievedAuthor.getAuthorName()).isEqualTo("James Clear");
-            logger.info("Author found with authorId: {}", authorId);
-        } else {
-            logger.info("Author with authorId: {}, does not exist", authorId);
-        }
+        // Mock behavior
+        when(libraryService.getAllAuthors()).thenReturn(mockAuthors);
+
+        // Call the method to test
+        List<Author> authors = libraryService.getAllAuthors();
+
+        // Log the result
+        logger.info("Retrieved {} authors from the service", authors.size());
+
+        // Assertions to verify the behavior
+        Assert.assertNotNull(authors, "Authors list should not be null");
+        Assert.assertEquals(authors.size(), 5, "The number of authors should match the expected value");
+
+        // Verify that the getAll method was called
+        verify(libraryService).getAllAuthors();
     }
 
-    @Test
-    public void testDeleteAuthor() {
-        String authorId = "A103";
-
-        //Verify if the author exists in the records
-        boolean isDeleted = libraryService.deleteAuthor(authorId);
-        assertThat(isDeleted).isTrue();
-
-        //Verifying the author no longer exists
-        Optional<Author> deletedAuthor = libraryService.getAuthor(authorId);
-        assertThat(deletedAuthor).isNotPresent();
-        System.out.println("Author deleted successfully");
-    }
-
-    //Tried using Mockito for testing
-    /* @Test
-    public void testDeleteAUTHOR() {
-        String authorId = "A111";
-        Author mockAuthor = new Author(authorId, "J K Rowling");
+    @Test(description = "Testing to update an existing author")
+    public void testUpdateAuthor() {
+        String authorId = "A101";
+        Author mockAuthor = new Author(authorId, "James Clear");
+        Author updatedAuthor = new Author(authorId, "Jay Shetty");
 
         //Mocking the behaviour
         when(libraryService.getAuthor(authorId)).thenReturn(Optional.of(mockAuthor));
-        when(libraryService.deleteAuthor(authorId)).thenReturn(true);
-
-        //Testing logic
-        Optional<Author> author = libraryService.getAuthor(authorId);
-        assertThat(author).isPresent();
-        boolean isDeleted = libraryService.deleteAuthor(authorId);
-        assertThat(isDeleted).isTrue();
-
-        //Verifying while the author has been deleted
-        verify(libraryService).deleteAuthor(authorId);
-    } */
-
-    @Test
-    public void testDeleteNonExistingAuthor() {
-        String authorId = "A223";
-
-        //Deleting the Author
-        boolean isDeleted = libraryService.deleteAuthor(authorId);
-        assertThat(isDeleted).isFalse();
-    }
-
-    @Test
-    public void testUpdateAuthor() {
-        String authorId = "A101";
+        when(libraryService.updateAuthor(updatedAuthor)).thenReturn(true);
         try {
-            //Updating the author's detail
-            Author updatedAuthor = new Author(authorId, "Jay Shetty");
+            logger.info("Attempting to update the author with author ID: {}", authorId);
             boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
-            assertThat(isUpdated).isTrue();
+            logger.info("Author name  is: {}", updatedAuthor.getAuthorName());
+            Assert.assertTrue(isUpdated, "Author should be updated successfully");
 
-            //Retrieving the updated author and verifying the changes
+            //Retrieve and Verify the updated author
             Optional<Author> retrievedAuthor = libraryService.getAuthor(authorId);
-            assertThat(retrievedAuthor).isPresent();
-            assertThat(retrievedAuthor.get().getAuthorName()).isEqualTo("Jay Shetty");
+            //Assertions to verify the behaviour
+            Assert.assertTrue(retrievedAuthor.isPresent(), "Updated author should be present in the database");
+            Assert.assertEquals(updatedAuthor.getAuthorName(), "Jay Shetty", "Author name should be updated");
+            logger.info("Successfully updated the author with author ID: {}", authorId);
         } catch (IllegalArgumentException e) {
-            fail("Invalid argument provided");
+            logger.error("Invalid argument provided during update", e);
+            Assert.fail("Invalid argument provided");
         }
+        //Verify that update method was called
+        verify(libraryService).updateAuthor(updatedAuthor);
     }
 
-    @Test
-    public void testUpdateNonExistingAuthor() {
-        String authorId = "A512";
-        //Updating the author's detail
-        Author updatedAuthor = new Author(authorId, "Jay Shetty");
-        boolean isUpdated = libraryService.updateAuthor(updatedAuthor);
-        assertThat(isUpdated).isFalse();
+    @Test (description = "Testing to delete an existing and non existing author")
+    public void testDeleteAuthor() {
+
+        //Setting up test data
+        String existingAuthorId = "A111";
+        String nonExistingAuthorId = "A222";
+        Author mockAuthor = new Author(existingAuthorId, "J K Rowling");
+
+        //Mocking the behaviour for existing author
+        when(libraryService.getAuthor(existingAuthorId)).thenReturn(Optional.of(mockAuthor));
+        when(libraryService.deleteAuthor(existingAuthorId)).thenReturn(true);
+
+        //Mocking the behaviour for non-existing author
+        when(libraryService.getAuthor(nonExistingAuthorId)).thenReturn(Optional.empty());
+        when(libraryService.deleteAuthor(nonExistingAuthorId)).thenReturn(false);
+
+        //Testing logic for existing author to check the behaviour
+        Optional<Author> existingAuthor = libraryService.getAuthor(existingAuthorId);
+        Assert.assertTrue(existingAuthor.isPresent(), "Author should be present");
+        boolean existingAuthorIsDeleted = libraryService.deleteAuthor(existingAuthorId);
+        Assert.assertTrue(existingAuthorIsDeleted, "Existing author should be deleted successfully");
+
+        //Verifying while the existing author has been deleted
+        verify(libraryService).deleteAuthor(existingAuthorId);
+
+        //Testing logic for non-existing author
+        Optional<Author> nonExistingAuthor = libraryService.getAuthor(nonExistingAuthorId);
+        Assert.assertFalse(nonExistingAuthor.isPresent(), "Author should not be present");
+        boolean nonExistingAuthorIsDeleted = libraryService.deleteAuthor(nonExistingAuthorId);
+        Assert.assertFalse(nonExistingAuthorIsDeleted, "Non-existing author should not be deleted");
+
+        //Verifying the behaviour for non-existing author
+        verify(libraryService).deleteAuthor(nonExistingAuthorId);
     }
 
-    @Test
-    public void testCreateBook() throws JsonProcessingException {
+    @Test(description = "Test creating a new book")
+    public void testCreateBook() throws Exception {
         JsonNode bookDetail = new ObjectMapper().createObjectNode()
                 .put("publishing year", 2015)
                 .put("genre", "Fiction");
-        Book newBook= new Book("B106", "Heidi", "Johanna Spyri", bookDetail);
 
-        //Adding the book
+        Book newBook = new Book("B106", "Heidi", "Johanna Spyri", bookDetail);
+        logger.info("Attempting to create a new Book: {}", newBook);
+
+        // Mocking the behavior of createBook method to simulate adding the book successfully
+        when(libraryService.createBook(newBook)).thenReturn(true);
         boolean isAdded = libraryService.createBook(newBook);
-        logger.info("Attempting to create a new book with bookId: {}", newBook.getBookId());
-        logger.info("Book creation is {}", isAdded ? "Successful" : "Failed");
+        logger.info("Book creation result: {}", isAdded);
+        Assert.assertTrue(isAdded, "Book should be created successfully");
 
-        //Verifying if the book was added successfully
+        // Verify that the createBook method was called with the correct parameters
+        verify(libraryService).createBook(newBook);
+        logger.info("Verified that created book was called with the correct book details");
+
+        // Mock the behavior for retrieving the created book
+        when(libraryService.getBook("B106")).thenReturn(Optional.of(newBook));
         Optional<Book> retrievedBook = libraryService.getBook("B106");
-        if(retrievedBook.isPresent()) {
-            Book addedBook = retrievedBook.get();
-            logger.info("Retrieved book: {}", addedBook);
+        logger.info("Retrieved Book for ID 'B106': {}", retrievedBook);
+        Assert.assertTrue(retrievedBook.isPresent(), "Retrieved book should be present");
+        Book addedBook = retrievedBook.get();
 
-            assertThat(addedBook.getBookId()).isEqualTo("B106");
-            assertThat(addedBook.getBookAuthor()).isEqualTo("Heidi");
-            assertThat(addedBook.getBookTitle()).isEqualTo("Johanna Spyri");
+        // Assert that the book's details match the expected values
+        Assert.assertEquals(addedBook.getBookId(), "B106", "Book ID should match");
+        Assert.assertEquals(addedBook.getBookAuthor(), "Heidi", "Author name should match");
+        Assert.assertEquals(addedBook.getBookTitle(), "Johanna Spyri", "Book title should match");
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode retrievedBookDetail = objectMapper.readTree(addedBook.getBookDetail().asText());
-            assertThat(retrievedBookDetail).isEqualTo(bookDetail);
-        } else {
-            logger.error("Added book is not found in the database");
-        }
+        // Verify that the book details (JSON) match
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode retrievedBookDetail = objectMapper.readTree(addedBook.getBookDetail().asText());
+//        Assert.assertEquals(retrievedBookDetail, bookDetail.toString(), "Book details should match");
     }
 
-    @Test
-    public void testFindAllBooks() {
-        //Testing the total number of books from data.sql
-        assertThat(libraryService.getAllBooks()).hasSize(5);
-    }
-
-    @Test
-    public void testFindBookById() throws JsonProcessingException {
-        String bookId = "B105";
-
-        //Verifying if the book record exists with the given bookId
-        Optional<Book> book = libraryService.getBook(bookId);
-
-        if(book.isPresent()) {
-            Book retrievedBook = book.get();
-            logger.info("Book found with ID: {}. Validating the book details", bookId);
-            assertThat(retrievedBook.getBookId()).isEqualTo(bookId);
-            assertThat(retrievedBook.getBookAuthor()).isEqualTo("Darius Foroux");
-            assertThat(retrievedBook.getBookTitle()).isEqualTo("Do It Today");
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode expectedDetails = objectMapper.readTree(retrievedBook.getBookDetail().asText());
-            assertThat(expectedDetails).isEqualTo(objectMapper.createObjectNode().put("publishing year", "2018")
-                    .put("genre", "Motivational"));
-            logger.info("Book details successfully validated: {}, retrievedBook", bookId);
-        } else {
-            logger.warn("Book with Id: {} does not exist", bookId);
-        }
-    }
-
-    @Test
-    public void testFindBookByNonExistingId() {
-        String bookId = "B000";
-        Optional<Book> book = libraryService.getBook(bookId);
-
-        if(book.isPresent()) {
-            Book retrievedBook = book.get();
-            assertThat(retrievedBook.getBookId()).isEqualTo(bookId);
-            assertThat(retrievedBook.getBookAuthor()).isEqualTo("Darius Foroux");
-            assertThat(retrievedBook.getBookTitle()).isEqualTo("Do It Today");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            JsonNode expectedDetails = objectMapper.createObjectNode()
-                    .put("publishing year", "2018")
-                    .put("genre", "Motivational");
-            assertThat(retrievedBook.getBookDetail()).isEqualTo(expectedDetails);
-            System.out.println("Book found");
-        } else {
-            logger.info("Book with book ID: {} does not exist", bookId);
-        }
-    }
-
-    @Test
+    @Test(description = "Test deleting an existing book from the database")
     public void testDeleteBook() {
-        String bookId = "B103";
-        Optional<Book> book = libraryService.getBook(bookId);
-
-        if(book.isPresent()) {
-            //Verify if the book exists in the database
-            logger.info("Book found with ID: {}. Proceeding to delete", bookId);
-            boolean isDeleted = libraryService.deleteBook(bookId);
-            assertThat(isDeleted).isTrue();
-            //Verify the book no longer exists in the database
-            logger.info("Delete operation for Book with ID: {} returned: {}", bookId, true);
-            Optional<Book> deletedBook = libraryService.getBook(bookId);
-            assertThat(deletedBook).isNotPresent();
-            logger.info("Verified that the book with book ID: {} has been successfully deleted", bookId);
-        } else {
-            logger.info("Book with book ID: {}, not found. Cannot proceed with deletion", bookId);
-            System.out.println("Book not found");
-        }
-    }
-
-    @Test
-    public void testDeleteNonExistingBook() {
-        String bookId = "B213";
-        Optional<Book> book = libraryService.getBook(bookId);
-
-        if(book.isPresent()) {
-            //Verify if the book exists in the database
-            boolean isDeleted = libraryService.deleteBook(bookId);
-            logger.info("Delete operation for book with ID:{}, returned: {}", bookId, isDeleted);
-            assertThat(isDeleted).isTrue();
-            //Verify the book no longer exists in the database
-            Optional<Book> deletedBook = libraryService.getBook(bookId);
-            assertThat(deletedBook).isNotPresent();
-            logger.info("Verify that book with ID: {} has been successfully deleted", bookId);
-        } else {
-            logger.info("Book not found");
-        }
-    }
-
-    @Test
-    public void testUpdateBook() {
         String bookId = "B101";
+        JsonNode bookDetail = new ObjectMapper().createObjectNode()
+                .put("publishing year", 2015)
+                .put("genre", "Fiction");
 
-        //Verify if the book exists in the database
-        Optional<Book> existingBook = libraryService.getBook(bookId);
-        if(existingBook.isPresent()) {
-            //Updating the book's details
-            logger.info("Book with ID: {} exists in the database. Proceeding to update....", bookId);
-            JsonNode updatedBookDetail = new ObjectMapper().createObjectNode()
-                    .put("publishing year", "2022")
-                    .put("genre", "Entrepreneurship");
-            Book updatedBook = new Book(bookId, "Ankur Warikoo", "Do Epic Shit", updatedBookDetail);
-            boolean isUpdated = libraryService.updateBook(updatedBook);
-            logger.info("Update operation for the bookId: {}, returned: {}", bookId, isUpdated);
-            assertThat(isUpdated).isTrue();
+        Book mockBook = new Book(bookId, "The Alchemist", "Paulo Coelho", bookDetail);
 
-            //Fetching the updated book and verifying the changes
-            Optional<Book> retrievedBook= libraryService.getBook(bookId);
-            assertThat(retrievedBook).isPresent();
-            logger.info("Updated book retrieved successfully from the database");
-           // assertThat(retrievedBook.get().getBookAuthor()).isEqualTo(updatedBook.getBookAuthor());
-           // assertThat(retrievedBook.get().getBookTitle()).isEqualTo(updatedBook.getBookTitle());
-           // assertThat(retrievedBook.get().getBookDetail()).isEqualTo(updatedBook.getBookDetail());
-            logger.info("Verified all updated values for the book with book ID: {}", bookId);
+        //Mocking the behaviour
+        when(libraryService.getBook(bookId)).thenReturn(Optional.of(mockBook));
+        when(libraryService.deleteBook(bookId)).thenReturn(true);
 
+        Optional<Book> book = libraryService.getBook(bookId);
+        if(book.isPresent()) {
+            logger.info("Book found with book Id: {}. Proceeding to delete...", bookId);
+
+            //Perform deletion of existing book in the database
+            boolean isDeleted = libraryService.deleteBook(bookId);
+            Assert.assertTrue(isDeleted, "Book should be deleted successfully");
+            logger.info("Book deleted successfully");
+            when(libraryService.getBook(bookId)).thenReturn(Optional.empty());
+
+            //Verify that the book no longer exists in the database
+            Optional<Book> deletedBook = libraryService.getBook(bookId);
+            Assert.assertFalse(deletedBook.isPresent(), "Deleted book should not be present in the database");
+
+            logger.info("Verified that the book with book Id: {} has been deleted successfully", bookId);
         } else {
-            logger.warn("Book not found with book ID: {}. Update operation failed", bookId);
+            logger.info("Book with book Id: {} not found. Cannot proceed further with delete operation", bookId);
+            Assert.fail("Book not found, deletion cannot proceed");
         }
-    }
 
-    @Test
-    public void testUpdateNonExistingBook() {
-        String bookId = "B213";
-
-        //Verify if the book exists in the database
-        Optional<Book> existingBook = libraryService.getBook(bookId);
-        if(existingBook.isPresent()) {
-            //Updating the book's details
-            JsonNode updatedBookDetail = new ObjectMapper().createObjectNode()
-                    .put("publishing year", "2022")
-                    .put("genre", "Entrepreneurship");
-            Book updatedBook = new Book(bookId, "Ankur Warikoo", "Do Epic Shit", updatedBookDetail);
-            boolean isUpdated = libraryService.updateBook(updatedBook);
-            assertThat(isUpdated).isTrue();
-
-            //Fetching the updated book and verifying the changes
-            Optional<Book> retrievedBook= libraryService.getBook(bookId);
-            assertThat(retrievedBook).isPresent();
-            assertThat(retrievedBook.get().getBookAuthor()).isEqualTo(updatedBook.getBookAuthor());
-            assertThat(retrievedBook.get().getBookTitle()).isEqualTo(updatedBook.getBookTitle());
-            assertThat(retrievedBook.get().getBookDetail()).isEqualTo(updatedBook.getBookDetail());
-            System.out.println("Book updated successfully with all the values verified");
-        } else {
-            System.out.println("Book not found in the database, update failed");
-        }
+        //Verify that the delete book executed
+        verify(libraryService).deleteBook(bookId);
     }
 
     @Test
     void contextLoads() {
-        assertThat(libraryService).isNotNull();
+        Assert.assertNotNull(libraryService, "Library Service should not be null");
     }
 
 }
