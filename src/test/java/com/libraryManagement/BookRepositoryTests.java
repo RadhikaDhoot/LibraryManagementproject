@@ -150,4 +150,38 @@ public class BookRepositoryTests {
         Assert.assertEquals(result.get(0).getBookDetail(), updatedBook.getBookDetail(), "Book Details should match");
     }
 
+    @Test(description = "Testing the delete book query")
+    public void testDeleteBook() {
+        logger.info("Creating a book to delete");
+        JsonNode bookDetail = new ObjectMapper().createObjectNode()
+                .put("publishing year", 2001)
+                .put("genre", "Self Help");
+        Book bookToDelete = new Book("B000", "Brain Tracy", "Eat That Frog", bookDetail);
+
+        logger.info("Mocking the delete query");
+        when(jdbcTemplate.update(eq("DELETE FROM books WHERE book_id = ?"), eq(bookToDelete.getBookId())))
+                .thenReturn(1);
+
+        logger.info("Attempting to perform the delete operation for the book with ID {}", bookToDelete.getBookId());
+        bookRepository.deleteBook(bookToDelete.getBookId());
+
+        logger.info("Mocking post-delete check to ensure the book no longer exists in the database");
+        when(jdbcTemplate.queryForObject(eq("SELECT COUNT(*) FROM books WHERE book_id = ?"),
+                eq(Integer.class), eq(bookToDelete.getBookId())))
+                .thenReturn(0);
+
+        logger.info("Verifying that the delete query was executed with correct parameters");
+        verify(jdbcTemplate, times(1)).update("DELETE FROM books WHERE book_id = ?", bookToDelete.getBookId());
+        logger.info("Verified the delete query was executed successfully");
+
+        //Fetch the book count to confirm deletion
+        Integer bookCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM books WHERE book_id = ?",
+                Integer.class, bookToDelete.getBookId()
+        );
+        logger.info("Asserting the results to validate the delete operation");
+        Assert.assertNotNull(bookCount, "Book count should not be null");
+        Assert.assertEquals(bookCount, Integer.valueOf(0), "Book count should be 0, indicating the book was deleted");
+        logger.info("The book was deleted successfully");
+    }
 }
